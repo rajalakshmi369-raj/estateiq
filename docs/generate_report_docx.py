@@ -831,7 +831,9 @@ def create_report():
         p_ref.paragraph_format.line_spacing = 1.3
         
     doc.save(REPORT_DOCX_PATH)
-    print(f"VIT Thesis Report successfully generated at: {REPORT_DOCX_PATH}")
+    final_docx = os.path.join(DOCS_DIR, 'ESTATEIQ_Final_Project_Report.docx')
+    doc.save(final_docx)
+    print(f"VIT Thesis Report successfully generated at: {REPORT_DOCX_PATH} and {final_docx}")
     return REPORT_DOCX_PATH
 
 if __name__ == '__main__':
