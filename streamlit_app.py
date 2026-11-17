@@ -1,7 +1,6 @@
 """
 ESTATEIQ - Interactive Cloud Dashboard
 AI-Powered House Price Prediction & Real Estate Analytics System for Indian Cities
-Master of Science in Data Science Thesis | VIT Vellore
 """
 
 import os
@@ -97,10 +96,9 @@ page = st.sidebar.radio(
 
 st.sidebar.markdown("---")
 st.sidebar.info("""
-**Academic Thesis Project**  
-*School of Advanced Sciences (SAS)*  
-Vellore Institute of Technology (VIT)  
-**Best Model:** Gradient Boosting ($R^2 = 0.9593$)
+**ESTATEIQ Enterprise Platform**  
+*AI Real Estate Valuation & Analytics*  
+**Production Engine:** Gradient Boosting ($R^2 = 0.9593$)
 """)
 
 # ====================================================================
@@ -522,8 +520,8 @@ elif page == "💰 8. Budget-Based Finder":
 # PAGE 9: DOWNLOAD OFFICIAL REPORTS
 # ====================================================================
 elif page == "📑 9. Download Official Reports":
-    st.title("📑 Download Project Deliverables & Reports")
-    st.write("Download the complete academic thesis documentation, dataset, and source code packages directly.")
+    st.title("📑 Download System Documentation & Reports")
+    st.write("Download comprehensive valuation documentation, reports, and dataset assets.")
 
     pdf_doc = os.path.join(BASE_DIR, 'docs', 'ESTATEIQ_Comprehensive_Project_Report.pdf')
     docx_doc = os.path.join(BASE_DIR, 'docs', 'ESTATEIQ_Comprehensive_Project_Report.docx')
@@ -535,7 +533,7 @@ elif page == "📑 9. Download Official Reports":
         if os.path.exists(pdf_doc):
             with open(pdf_doc, "rb") as f:
                 st.download_button(
-                    label="📕 Download Formal VIT Project Report (PDF)",
+                    label="📕 Download Comprehensive Valuation Report (PDF)",
                     data=f.read(),
                     file_name="ESTATEIQ_Comprehensive_Project_Report.pdf",
                     mime="application/pdf",
@@ -545,7 +543,7 @@ elif page == "📑 9. Download Official Reports":
         if os.path.exists(docx_doc):
             with open(docx_doc, "rb") as f:
                 st.download_button(
-                    label="📘 Download Formal VIT Project Report (DOCX)",
+                    label="📘 Download Comprehensive Valuation Report (DOCX)",
                     data=f.read(),
                     file_name="ESTATEIQ_Comprehensive_Project_Report.docx",
                     mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",

@@ -1,7 +1,6 @@
 # ESTATEIQ – AI-Powered House Price Prediction and Real Estate Analytics System for Indian Cities
 
-**Master of Science in Data Science Thesis Project**  
-*School of Advanced Sciences (SAS), Department of Mathematics, Vellore Institute of Technology (VIT), Vellore*
+**Enterprise Automated Valuation Models (AVM) & Spatial Analytics Platform**
 
 ---
 

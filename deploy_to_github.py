@@ -79,7 +79,7 @@ def main():
             create_url = "https://api.github.com/user/repos"
             payload = json.dumps({
                 "name": repo_name,
-                "description": "ESTATEIQ - AI-Powered House Price Prediction & Real Estate Analytics System for Indian Cities (VIT M.Sc. Data Science Thesis)",
+                "description": "ESTATEIQ - AI-Powered House Price Prediction & Real Estate Analytics System for Indian Cities",
                 "private": False,
                 "has_issues": True,
                 "has_projects": True,
