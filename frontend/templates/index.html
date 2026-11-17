@@ -1,0 +1,362 @@
+{% extends "base.html" %}
+
+{% block title %}ESTATEIQ - AI-Powered House Price Prediction & Real Estate Analytics{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-banner">
+  <div class="container position-relative" style="z-index: 2;">
+    <div class="row align-items-center">
+      <div class="col-lg-7">
+        <span class="badge bg-warning text-dark px-3 py-2 fw-bold mb-3">
+          <i class="fa-solid fa-sparkles me-1"></i> AI-DRIVEN REALTY APPRAISALS IN INDIA
+        </span>
+        <h1 class="hero-title">
+          Intelligent House Price Valuation for <span>Indian Metros</span>
+        </h1>
+        <p class="hero-subtitle">
+          Harnessing Gradient Boosting, XGBoost, and SHAP explainability to provide institutional-grade property valuations, spatial intelligence, and predictive market analytics across India.
+        </p>
+        <div class="d-flex flex-wrap gap-3">
+          <a href="{{ url_for('predict') }}" class="btn btn-gold btn-lg shadow">
+            <i class="fa-solid fa-calculator me-2"></i> Predict House Price
+          </a>
+          <a href="{{ url_for('location_intelligence') }}" class="btn btn-outline-light btn-lg">
+            <i class="fa-solid fa-map-location-dot me-2"></i> Explore India Map
+          </a>
+          <a href="{{ url_for('analytics') }}" class="btn btn-outline-gold btn-lg">
+            <i class="fa-solid fa-chart-pie me-2"></i> Market Analytics
+          </a>
+        </div>
+      </div>
+      <div class="col-lg-5 d-none d-lg-block">
+        <div class="p-4 rounded-4" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(212,175,55,0.3); backdrop-filter: blur(10px);">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <span class="text-warning fw-bold small"><i class="fa-solid fa-microchip me-1"></i> ML ENSEMBLE ENGINE</span>
+            <span class="badge bg-success">R² Score 0.9593</span>
+          </div>
+          <h5 class="text-white mb-3">5 Regressors Benchmark</h5>
+          <div class="small mb-2 d-flex justify-content-between text-light">
+            <span>Gradient Boosting</span><span class="text-warning fw-bold">95.9% Acc</span>
+          </div>
+          <div class="progress mb-3" style="height: 6px;">
+            <div class="progress-bar bg-warning" style="width: 95.9%"></div>
+          </div>
+
+          <div class="small mb-2 d-flex justify-content-between text-light">
+            <span>XGBoost Regressor</span><span class="text-info fw-bold">95.6% Acc</span>
+          </div>
+          <div class="progress mb-3" style="height: 6px;">
+            <div class="progress-bar bg-info" style="width: 95.6%"></div>
+          </div>
+
+          <div class="small mb-2 d-flex justify-content-between text-light">
+            <span>Random Forest</span><span class="text-light fw-bold">92.0% Acc</span>
+          </div>
+          <div class="progress mb-3" style="height: 6px;">
+            <div class="progress-bar bg-secondary" style="width: 92.0%"></div>
+          </div>
+
+          <hr class="border-secondary my-3">
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="small text-muted">SHAP Local Attribution</span>
+            <a href="{{ url_for('explainability') }}" class="small text-warning text-decoration-none">View Pipeline &rarr;</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Search Container -->
+<div class="container">
+  <div class="search-card">
+    <form action="{{ url_for('recommendations') }}" method="GET" class="row g-3 align-items-end">
+      <div class="col-md-3">
+        <label class="form-label"><i class="fa-solid fa-map-pin text-warning me-1"></i> State</label>
+        <select name="state" class="form-select" id="searchState">
+          <option value="All">All Indian States</option>
+          {% for s in states %}
+            <option value="{{ s }}">{{ s }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label"><i class="fa-solid fa-city text-warning me-1"></i> Metro City</label>
+        <select name="city" class="form-select" id="searchCity">
+          <option value="All">All Cities</option>
+          {% for c in cities %}
+            <option value="{{ c }}">{{ c }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-2">
+        <label class="form-label"><i class="fa-solid fa-bed text-warning me-1"></i> Configuration</label>
+        <select name="bedrooms" class="form-select">
+          <option value="All">Any BHK</option>
+          <option value="1">1 BHK</option>
+          <option value="2">2 BHK</option>
+          <option value="3">3 BHK</option>
+          <option value="4">4 BHK</option>
+          <option value="5">5+ BHK</option>
+        </select>
+      </div>
+
+      <div class="col-md-2">
+        <label class="form-label"><i class="fa-solid fa-wallet text-warning me-1"></i> Max Budget</label>
+        <select name="max_price" class="form-select">
+          <option value="">Any Budget</option>
+          <option value="5000000">Up to ₹ 50 Lakhs</option>
+          <option value="10000000">Up to ₹ 1.0 Crore</option>
+          <option value="20000000">Up to ₹ 2.0 Crores</option>
+          <option value="50000000">Up to ₹ 5.0 Crores</option>
+        </select>
+      </div>
+
+      <div class="col-md-2">
+        <button type="submit" class="btn btn-navy w-100 py-2">
+          <i class="fa-solid fa-magnifying-glass me-1"></i> Search
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Stats Counter Row -->
+<div class="container my-5">
+  <div class="row g-4">
+    <div class="col-lg-3 col-sm-6">
+      <div class="stat-widget">
+        <div>
+          <div class="stat-value">{{ stats.total_properties }}</div>
+          <div class="stat-label">Properties Cataloged</div>
+        </div>
+        <div class="stat-icon">
+          <i class="fa-solid fa-building"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-3 col-sm-6">
+      <div class="stat-widget navy-accent">
+        <div>
+          <div class="stat-value">{{ stats.cities_covered }}</div>
+          <div class="stat-label">Major Metros Covered</div>
+        </div>
+        <div class="stat-icon">
+          <i class="fa-solid fa-earth-asia"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-3 col-sm-6">
+      <div class="stat-widget">
+        <div>
+          <div class="stat-value">{{ stats.avg_price }}</div>
+          <div class="stat-label">Average Metro Valuation</div>
+        </div>
+        <div class="stat-icon">
+          <i class="fa-solid fa-indian-rupee-sign"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-3 col-sm-6">
+      <div class="stat-widget navy-accent">
+        <div>
+          <div class="stat-value">95.9%</div>
+          <div class="stat-label">Model R² Confidence</div>
+        </div>
+        <div class="stat-icon">
+          <i class="fa-solid fa-award"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Featured Properties Catalog -->
+<section class="container my-5">
+  <div class="d-flex justify-content-between align-items-end mb-4">
+    <div>
+      <span class="text-warning fw-bold small text-uppercase letter-spacing-1">Market Benchmark</span>
+      <h3 class="fw-bold text-navy mb-0">Featured Property Records</h3>
+    </div>
+    <a href="{{ url_for('recommendations') }}" class="btn btn-outline-gold btn-sm">
+      View All Catalog &rarr;
+    </a>
+  </div>
+
+  <div class="row g-4">
+    {% for prop in featured_props %}
+    <div class="col-lg-4 col-md-6">
+      <div class="property-card position-relative">
+        <span class="property-badge">{{ prop.property_type }}</span>
+        
+        <div class="p-3" style="background: linear-gradient(135deg, #0A192F, #1E3A8A); color: white; min-height: 110px; border-radius: 8px 8px 0 0; padding-top: 2.5rem !important;">
+          <h5 class="fw-bold mb-1 text-white">{{ prop.area_name }}</h5>
+          <p class="small text-light mb-0"><i class="fa-solid fa-location-dot me-1 text-warning"></i> {{ prop.city }}, {{ prop.state }}</p>
+        </div>
+
+        <div class="eq-card-body flex-grow-1">
+          <div class="d-flex justify-content-between align-items-baseline mb-3">
+            <div>
+              <div class="property-price">{{ format_inr(prop.price) }}</div>
+              <div class="property-rate">₹ {{ (prop.price / prop.area_sqft)|round|int }}/sq.ft</div>
+            </div>
+            <span class="badge bg-light text-dark border">{{ prop.furnishing }}</span>
+          </div>
+
+          <div class="d-flex flex-wrap gap-2 mb-3">
+            <span class="feature-pill"><i class="fa-solid fa-bed text-muted me-1"></i> {{ prop.bedrooms }} BHK</span>
+            <span class="feature-pill"><i class="fa-solid fa-bath text-muted me-1"></i> {{ prop.bathrooms }} Baths</span>
+            <span class="feature-pill"><i class="fa-solid fa-maximize text-muted me-1"></i> {{ prop.area_sqft }} sq.ft</span>
+            <span class="feature-pill"><i class="fa-solid fa-compass text-muted me-1"></i> Facing {{ prop.facing }}</span>
+          </div>
+
+          <div class="small text-muted mb-3 text-truncate">
+            <i class="fa-solid fa-circle-check text-success me-1"></i> {{ prop.amenities.replace(';', ', ') }}
+          </div>
+
+          <div class="d-flex gap-2 pt-2 border-top">
+            <a href="{{ url_for('comparison', p1=prop.property_id) }}" class="btn btn-sm btn-outline-secondary w-50">
+              <i class="fa-solid fa-code-compare me-1"></i> Compare
+            </a>
+            <a href="{{ url_for('predict') }}" class="btn btn-sm btn-gold w-50">
+              <i class="fa-solid fa-calculator me-1"></i> Appraise
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- 10 Core Features Pillars Grid -->
+<section class="bg-white py-5 border-top border-bottom">
+  <div class="container">
+    <div class="text-center max-w-700 mx-auto mb-5">
+      <span class="badge bg-warning text-dark px-3 py-1 fw-bold text-uppercase mb-2">Capabilities</span>
+      <h2 class="fw-bold text-navy">10 Comprehensive Real Estate Intelligence Features</h2>
+      <p class="text-muted">An integrated suite engineered for property buyers, real estate investors, builders and academic research.</p>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="eq-card p-3 h-100">
+          <div class="d-flex align-items-center mb-3">
+            <div class="stat-icon me-3"><i class="fa-solid fa-calculator"></i></div>
+            <h5 class="fw-bold mb-0">1. Smart Price Prediction</h5>
+          </div>
+          <p class="small text-muted">17-variable multi-attribute input pipeline assessing spatial, architectural and amenity parameters to compute market prices in INR.</p>
+          <a href="{{ url_for('predict') }}" class="small text-warning fw-bold text-decoration-none">Launch Predictor &rarr;</a>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="eq-card p-3 h-100">
+          <div class="d-flex align-items-center mb-3">
+            <div class="stat-icon me-3"><i class="fa-solid fa-map-location-dot"></i></div>
+            <h5 class="fw-bold mb-0">2. India Location Intelligence</h5>
+          </div>
+          <p class="small text-muted">Leaflet & OpenStreetMap interactive GIS view mapping super-luxury, premium, and affordable zones across Indian metropolitan cities.</p>
+          <a href="{{ url_for('location_intelligence') }}" class="small text-warning fw-bold text-decoration-none">Explore Map &rarr;</a>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="eq-card p-3 h-100">
+          <div class="d-flex align-items-center mb-3">
+            <div class="stat-icon me-3"><i class="fa-solid fa-chart-line"></i></div>
+            <h5 class="fw-bold mb-0">3. Market Analytics</h5>
+          </div>
+          <p class="small text-muted">Interactive Plotly visualizations comparing city rates, state price averages, BHK distributions, age correlations and square footage trends.</p>
+          <a href="{{ url_for('analytics') }}" class="small text-warning fw-bold text-decoration-none">Open Analytics &rarr;</a>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="eq-card p-3 h-100">
+          <div class="d-flex align-items-center mb-3">
+            <div class="stat-icon me-3"><i class="fa-solid fa-code-compare"></i></div>
+            <h5 class="fw-bold mb-0">4. Property Comparison</h5>
+          </div>
+          <p class="small text-muted">Direct side-by-side benchmark of up to three properties contrasting rate/sqft, age, floor height, bathrooms, and total outlays.</p>
+          <a href="{{ url_for('comparison') }}" class="small text-warning fw-bold text-decoration-none">Compare Listings &rarr;</a>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="eq-card p-3 h-100">
+          <div class="d-flex align-items-center mb-3">
+            <div class="stat-icon me-3"><i class="fa-solid fa-thumbs-up"></i></div>
+            <h5 class="fw-bold mb-0">5. Smart Recommendations</h5>
+          </div>
+          <p class="small text-muted">Multi-criteria filtering engine matching your targeted budget, city, BHK configuration and minimum carpet area requirement.</p>
+          <a href="{{ url_for('recommendations') }}" class="small text-warning fw-bold text-decoration-none">Get Matches &rarr;</a>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="eq-card p-3 h-100">
+          <div class="d-flex align-items-center mb-3">
+            <div class="stat-icon me-3"><i class="fa-solid fa-brain"></i></div>
+            <h5 class="fw-bold mb-0">6. AI SHAP Explainability</h5>
+          </div>
+          <p class="small text-muted">Unbox the black box: SHAP tree attribution reveals exactly why the model predicted a valuation, quantifying positive and negative drivers.</p>
+          <a href="{{ url_for('explainability') }}" class="small text-warning fw-bold text-decoration-none">Understand AI &rarr;</a>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="eq-card p-3 h-100">
+          <div class="d-flex align-items-center mb-3">
+            <div class="stat-icon me-3"><i class="fa-solid fa-wallet"></i></div>
+            <h5 class="fw-bold mb-0">7. Budget-Based Finder</h5>
+          </div>
+          <p class="small text-muted">Set your maximum financial limit to discover lowest-priced bargains, highest square footage value, and best rate-per-sqft options.</p>
+          <a href="{{ url_for('budget_finder') }}" class="small text-warning fw-bold text-decoration-none">Find by Budget &rarr;</a>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="eq-card p-3 h-100">
+          <div class="d-flex align-items-center mb-3">
+            <div class="stat-icon me-3"><i class="fa-solid fa-file-pdf"></i></div>
+            <h5 class="fw-bold mb-0">8. Valuation PDF Dossier</h5>
+          </div>
+          <p class="small text-muted">Generate certified institutional appraisal dossiers with confidence intervals, SHAP value drivers, and similar locality comps.</p>
+          <a href="{{ url_for('predict') }}" class="small text-warning fw-bold text-decoration-none">Generate Report &rarr;</a>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="eq-card p-3 h-100">
+          <div class="d-flex align-items-center mb-3">
+            <div class="stat-icon me-3"><i class="fa-solid fa-user-shield"></i></div>
+            <h5 class="fw-bold mb-0">9. User & Admin Dashboards</h5>
+          </div>
+          <p class="small text-muted">Authentication, shortlisted properties, appraisal log, admin property CRUD, and live model performance telemetry.</p>
+          <a href="{{ url_for('dashboard') }}" class="small text-warning fw-bold text-decoration-none">Access Portal &rarr;</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Call to Action Banner -->
+<section class="container my-5 text-center">
+  <div class="p-5 rounded-4 shadow" style="background: linear-gradient(135deg, #0A192F 0%, #172A45 100%); border: 2px solid #D4AF37;">
+    <h2 class="text-white fw-bold mb-3">Ready to Appraise Any Indian Residential Property?</h2>
+    <p class="text-light max-w-650 mx-auto mb-4">
+      Instant machine learning valuation with uncertainty intervals, SHAP explainability, and downloadable PDF reports.
+    </p>
+    <a href="{{ url_for('predict') }}" class="btn btn-gold btn-lg px-5 shadow">
+      <i class="fa-solid fa-calculator me-2"></i> Launch Smart Predictor Now
+    </a>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block title %}Smart Property Recommendations - ESTATEIQ{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb small mb-1">
+          <li class="breadcrumb-item"><a href="{{ url_for('index') }}" class="text-decoration-none">Home</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Smart Recommendations</li>
+        </ol>
+      </nav>
+      <h2 class="fw-bold text-navy mb-0">
+        <i class="fa-solid fa-thumbs-up text-warning me-2"></i>Smart Property Recommendation Engine
+      </h2>
+      <p class="text-muted small mb-0">Filtered algorithmic matching across Indian residential real estate records.</p>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Filter Sidebar -->
+    <div class="col-lg-3">
+      <div class="eq-card p-3 sticky-top" style="top: 85px;">
+        <h5 class="fw-bold text-navy mb-3">
+          <i class="fa-solid fa-filter text-warning me-1"></i> Recommendation Criteria
+        </h5>
+
+        <form action="{{ url_for('recommendations') }}" method="GET">
+          <div class="mb-3">
+            <label class="form-label small">State</label>
+            <select name="state" class="form-select form-select-sm">
+              <option value="All">All States</option>
+              {% for s in states %}
+                <option value="{{ s }}" {% if selected.state == s %}selected{% endif %}>{{ s }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small">City</label>
+            <select name="city" class="form-select form-select-sm">
+              <option value="All">All Indian Cities</option>
+              {% for c in cities %}
+                <option value="{{ c }}" {% if selected.city == c %}selected{% endif %}>{{ c }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small">Configuration</label>
+            <select name="bedrooms" class="form-select form-select-sm">
+              <option value="All">Any BHK</option>
+              <option value="1" {% if selected.bedrooms == '1' %}selected{% endif %}>1 BHK</option>
+              <option value="2" {% if selected.bedrooms == '2' %}selected{% endif %}>2 BHK</option>
+              <option value="3" {% if selected.bedrooms == '3' %}selected{% endif %}>3 BHK</option>
+              <option value="4" {% if selected.bedrooms == '4' %}selected{% endif %}>4 BHK</option>
+              <option value="5" {% if selected.bedrooms == '5' %}selected{% endif %}>5+ BHK</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small">Asset Type</label>
+            <select name="property_type" class="form-select form-select-sm">
+              <option value="All">All Property Types</option>
+              <option value="Apartment" {% if selected.property_type == 'Apartment' %}selected{% endif %}>Apartment</option>
+              <option value="Villa" {% if selected.property_type == 'Villa' %}selected{% endif %}>Villa</option>
+              <option value="Independent House" {% if selected.property_type == 'Independent House' %}selected{% endif %}>Independent House</option>
+              <option value="Penthouse" {% if selected.property_type == 'Penthouse' %}selected{% endif %}>Penthouse</option>
+              <option value="Builder Floor" {% if selected.property_type == 'Builder Floor' %}selected{% endif %}>Builder Floor</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small">Max Budget (INR)</label>
+            <select name="max_price" class="form-select form-select-sm">
+              <option value="">Any Budget</option>
+              <option value="6000000" {% if selected.max_price == '6000000' %}selected{% endif %}>Up to ₹ 60 Lakhs</option>
+              <option value="12000000" {% if selected.max_price == '12000000' %}selected{% endif %}>Up to ₹ 1.2 Crores</option>
+              <option value="25000000" {% if selected.max_price == '25000000' %}selected{% endif %}>Up to ₹ 2.5 Crores</option>
+              <option value="50000000" {% if selected.max_price == '50000000' %}selected{% endif %}>Up to ₹ 5.0 Crores</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small">Min Area (Sq.Ft)</label>
+            <input type="number" name="min_area" class="form-control form-control-sm" placeholder="e.g. 1000" value="{{ selected.min_area }}">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small">Sorting Order</label>
+            <select name="sort_by" class="form-select form-select-sm">
+              <option value="newest" {% if selected.sort_by == 'newest' %}selected{% endif %}>Recommended</option>
+              <option value="price_low" {% if selected.sort_by == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+              <option value="price_high" {% if selected.sort_by == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+              <option value="area_high" {% if selected.sort_by == 'area_high' %}selected{% endif %}>Area: Largest First</option>
+            </select>
+          </div>
+
+          <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-navy btn-sm">
+              <i class="fa-solid fa-arrows-rotate me-1"></i> Apply Filters
+            </button>
+            <a href="{{ url_for('recommendations') }}" class="btn btn-outline-secondary btn-sm">
+              Reset
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Recommendations Grid -->
+    <div class="col-lg-9">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <span class="text-muted small">Displaying <strong>{{ properties|length }}</strong> Recommended Listings</span>
+      </div>
+
+      {% if properties %}
+      <div class="row g-4">
+        {% for prop in properties %}
+        <div class="col-md-6 col-xl-4">
+          <div class="property-card position-relative">
+            <span class="property-badge">{{ prop.property_type }}</span>
+
+            <div class="p-3" style="background: linear-gradient(135deg, #0A192F, #1E3A8A); color: white; min-height: 95px; border-radius: 8px 8px 0 0; padding-top: 2.2rem !important;">
+              <h6 class="fw-bold mb-1 text-white text-truncate">{{ prop.area_name }}</h6>
+              <p class="small text-light mb-0"><i class="fa-solid fa-location-dot me-1 text-warning"></i> {{ prop.city }}, {{ prop.state }}</p>
+            </div>
+
+            <div class="eq-card-body flex-grow-1">
+              <div class="d-flex justify-content-between align-items-baseline mb-2">
+                <div>
+                  <div class="property-price fs-5">{{ format_inr(prop.price) }}</div>
+                  <div class="property-rate">₹ {{ (prop.price / prop.area_sqft)|round|int }}/sq.ft</div>
+                </div>
+                <span class="badge bg-light text-dark border">{{ prop.furnishing }}</span>
+              </div>
+
+              <div class="d-flex flex-wrap gap-1 mb-2">
+                <span class="feature-pill"><i class="fa-solid fa-bed me-1"></i>{{ prop.bedrooms }} BHK</span>
+                <span class="feature-pill"><i class="fa-solid fa-bath me-1"></i>{{ prop.bathrooms }} Baths</span>
+                <span class="feature-pill"><i class="fa-solid fa-maximize me-1"></i>{{ prop.area_sqft }} sqft</span>
+              </div>
+
+              <div class="small text-muted mb-3 text-truncate">
+                <i class="fa-solid fa-circle-check text-success me-1"></i> {{ prop.amenities.replace(';', ', ') }}
+              </div>
+
+              <div class="d-flex gap-2 pt-2 border-top">
+                <a href="{{ url_for('comparison', p1=prop.property_id) }}" class="btn btn-sm btn-outline-secondary w-50">
+                  <i class="fa-solid fa-code-compare me-1"></i> Compare
+                </a>
+                <a href="{{ url_for('predict') }}" class="btn btn-sm btn-gold w-50">
+                  <i class="fa-solid fa-calculator me-1"></i> Appraise
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="text-center py-5 eq-card">
+        <i class="fa-solid fa-magnifying-glass fa-3x text-warning mb-3"></i>
+        <h5 class="fw-bold">No Matching Properties Found</h5>
+        <p class="text-muted small">Try broadening your search budget or choosing all cities.</p>
+        <a href="{{ url_for('recommendations') }}" class="btn btn-navy btn-sm">Clear Filters</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

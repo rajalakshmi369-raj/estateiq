@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+
+{% block title %}Administrator Control Center - ESTATEIQ{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb small mb-1">
+          <li class="breadcrumb-item"><a href="{{ url_for('index') }}" class="text-decoration-none">Home</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Admin Control Center</li>
+        </ol>
+      </nav>
+      <h2 class="fw-bold text-navy mb-0">
+        <i class="fa-solid fa-shield-halved text-warning me-2"></i>ESTATEIQ System Administration Console
+      </h2>
+      <p class="text-muted small mb-0">Platform oversight, dataset management, machine learning telemetry, and system audits.</p>
+    </div>
+
+    <span class="badge bg-danger p-2 fs-6">
+      <i class="fa-solid fa-lock me-1"></i> Admin Superuser Mode
+    </span>
+  </div>
+
+  <!-- Stat Cards Row -->
+  <div class="row g-4 mb-4">
+    <div class="col-xl-3 col-sm-6">
+      <div class="stat-widget">
+        <div>
+          <div class="stat-value">{{ stats.total_users }}</div>
+          <div class="stat-label">Registered Users</div>
+        </div>
+        <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+      </div>
+    </div>
+
+    <div class="col-xl-3 col-sm-6">
+      <div class="stat-widget navy-accent">
+        <div>
+          <div class="stat-value">{{ stats.total_properties }}</div>
+          <div class="stat-label">Properties In DB</div>
+        </div>
+        <div class="stat-icon"><i class="fa-solid fa-building"></i></div>
+      </div>
+    </div>
+
+    <div class="col-xl-3 col-sm-6">
+      <div class="stat-widget">
+        <div>
+          <div class="stat-value">{{ stats.total_predictions }}</div>
+          <div class="stat-label">Appraisals Generated</div>
+        </div>
+        <div class="stat-icon"><i class="fa-solid fa-calculator"></i></div>
+      </div>
+    </div>
+
+    <div class="col-xl-3 col-sm-6">
+      <div class="stat-widget navy-accent">
+        <div>
+          <div class="stat-value">{{ format_inr(stats.avg_price) }}</div>
+          <div class="stat-label">Mean Catalog Outlay</div>
+        </div>
+        <div class="stat-icon"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 2: Model Versions & Recent Predictions -->
+  <div class="row g-4 mb-4">
+    <!-- Model Versions Telemetry -->
+    <div class="col-lg-6">
+      <div class="eq-card h-100">
+        <div class="eq-card-header navy">
+          <h5 class="fw-bold mb-0"><i class="fa-solid fa-microchip text-warning me-2"></i>Active Model Registry</h5>
+          <span class="badge bg-warning text-dark">Production Weights</span>
+        </div>
+        <div class="eq-card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 small">
+              <thead class="table-light">
+                <tr>
+                  <th>Algorithm</th>
+                  <th>R² Score</th>
+                  <th>RMSE</th>
+                  <th>MAE</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for mv in stats.model_versions %}
+                <tr {% if mv.is_active %}class="table-warning fw-bold"{% endif %}>
+                  <td><strong>{{ mv.algorithm }}</strong></td>
+                  <td><span class="badge bg-navy text-warning">{{ mv.r2_score }}</span></td>
+                  <td class="font-monospace">₹ {{ "{:,}".format(mv.rmse) }}</td>
+                  <td class="font-monospace">₹ {{ "{:,}".format(mv.mae) }}</td>
+                  <td>
+                    {% if mv.is_active %}
+                      <span class="badge bg-success">Active Live Model</span>
+                    {% else %}
+                      <span class="badge bg-secondary">Benchmarked</span>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent System Predictions Audit -->
+    <div class="col-lg-6">
+      <div class="eq-card h-100">
+        <div class="eq-card-header navy">
+          <h5 class="fw-bold mb-0"><i class="fa-solid fa-clock text-warning me-2"></i>Recent Appraisal Invocations</h5>
+        </div>
+        <div class="eq-card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 small">
+              <thead class="table-light">
+                <tr>
+                  <th>User</th>
+                  <th>Locality & City</th>
+                  <th>Configuration</th>
+                  <th>Estimated Value</th>
+                  <th>Timestamp</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for rp in recent_preds %}
+                <tr>
+                  <td>{{ rp.user_name or 'Guest User' }}</td>
+                  <td><strong>{{ rp.area_name }}</strong>, {{ rp.city }}</td>
+                  <td>{{ rp.bedrooms }} BHK ({{ rp.area_sqft }} sqft)</td>
+                  <td class="fw-bold text-success">{{ format_inr(rp.predicted_price) }}</td>
+                  <td class="text-muted">{{ rp.created_at[:16] if rp.created_at else '' }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 3: Manage Properties Table with Delete Action -->
+  <div class="row">
+    <div class="col-12">
+      <div class="eq-card">
+        <div class="eq-card-header navy">
+          <h5 class="fw-bold mb-0"><i class="fa-solid fa-database text-warning me-2"></i>Catalog Records Management</h5>
+          <span class="badge bg-light text-dark">Live Database Table</span>
+        </div>
+        <div class="eq-card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 small">
+              <thead class="table-light">
+                <tr>
+                  <th>ID</th>
+                  <th>Locality</th>
+                  <th>City & State</th>
+                  <th>Type</th>
+                  <th>Specs</th>
+                  <th>Price</th>
+                  <th>Rate/sqft</th>
+                  <th class="text-center">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for prop in properties %}
+                <tr id="row-{{ prop.property_id }}">
+                  <td><strong>{{ prop.property_id }}</strong></td>
+                  <td>{{ prop.area_name }}</td>
+                  <td>{{ prop.city }}, {{ prop.state }}</td>
+                  <td><span class="badge bg-light text-dark border">{{ prop.property_type }}</span></td>
+                  <td>{{ prop.bedrooms }} BHK &bull; {{ prop.area_sqft }} sq.ft</td>
+                  <td class="fw-bold text-navy">{{ format_inr(prop.price) }}</td>
+                  <td>₹ {{ (prop.price / prop.area_sqft)|round|int }}/sqft</td>
+                  <td class="text-center">
+                    <button class="btn btn-sm btn-outline-danger py-0 px-2 delete-prop-btn" data-id="{{ prop.property_id }}">
+                      <i class="fa-solid fa-trash me-1"></i> Delete
+                    </button>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  document.querySelectorAll('.delete-prop-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const id = this.dataset.id;
+      if (confirm(`Are you sure you want to delete property ${id}?`)) {
+        fetch(`/api/admin/delete-property/${id}`, { method: 'POST' })
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              const row = document.getElementById(`row-${id}`);
+              if (row) row.remove();
+            } else {
+              alert('Error removing property.');
+            }
+          });
+      }
+    });
+  });
+</script>
+{% endblock %}

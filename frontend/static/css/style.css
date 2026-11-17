@@ -1,0 +1,399 @@
+/* ====================================================================
+   ESTATEIQ - Premium Navy Blue + White + Gold Theme
+   ==================================================================== */
+
+:root {
+  --primary-navy: #0A192F;
+  --secondary-navy: #112240;
+  --light-navy: #233554;
+  --accent-gold: #D4AF37;
+  --gold-hover: #F3BA2F;
+  --gold-light: #FBF8EE;
+  --gold-border: #E8D382;
+  --pure-white: #FFFFFF;
+  --bg-light: #F8FAFC;
+  --card-bg: #FFFFFF;
+  --text-dark: #1E293B;
+  --text-muted: #64748B;
+  --border-subtle: #E2E8F0;
+  --shadow-sm: 0 2px 4px rgba(10, 25, 47, 0.05);
+  --shadow-md: 0 6px 18px rgba(10, 25, 47, 0.08);
+  --shadow-lg: 0 12px 30px rgba(10, 25, 47, 0.12);
+  --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+body {
+  font-family: var(--font-main);
+  background-color: var(--bg-light);
+  color: var(--text-dark);
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* --- Navigation Bar --- */
+.estateiq-navbar {
+  background-color: var(--primary-navy);
+  border-bottom: 2px solid var(--accent-gold);
+  padding: 0.75rem 1.5rem;
+  box-shadow: var(--shadow-md);
+}
+
+.navbar-brand {
+  font-weight: 800;
+  font-size: 1.4rem;
+  letter-spacing: 0.5px;
+  color: var(--pure-white) !important;
+  display: flex;
+  align-items: center;
+}
+
+.navbar-brand .gold-text {
+  color: var(--accent-gold);
+  margin-left: 2px;
+}
+
+.navbar-brand .brand-badge {
+  font-size: 0.65rem;
+  background: rgba(212, 175, 55, 0.2);
+  color: var(--accent-gold);
+  border: 1px solid var(--accent-gold);
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 8px;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+.nav-link {
+  color: #CBD5E1 !important;
+  font-weight: 500;
+  font-size: 0.92rem;
+  padding: 0.5rem 0.85rem !important;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.nav-link:hover, .nav-link.active {
+  color: var(--accent-gold) !important;
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+/* --- Hero Section --- */
+.hero-banner {
+  background: linear-gradient(135deg, var(--primary-navy) 0%, var(--secondary-navy) 60%, var(--light-navy) 100%);
+  color: var(--pure-white);
+  padding: 4.5rem 0 3.5rem 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-banner::after {
+  content: '';
+  position: absolute;
+  top: 0; right: 0; bottom: 0; left: 0;
+  background: radial-gradient(circle at 80% 20%, rgba(212, 175, 55, 0.15), transparent 45%);
+  pointer-events: none;
+}
+
+.hero-title {
+  font-weight: 800;
+  font-size: 2.75rem;
+  line-height: 1.2;
+  margin-bottom: 1.25rem;
+}
+
+.hero-title span {
+  color: var(--accent-gold);
+}
+
+.hero-subtitle {
+  font-size: 1.15rem;
+  color: #CBD5E1;
+  max-width: 650px;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+/* --- Quick Search Card --- */
+.search-card {
+  background: var(--pure-white);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
+  margin-top: -2.5rem;
+  border: 1px solid var(--border-subtle);
+  position: relative;
+  z-index: 10;
+}
+
+/* --- Dashboard & Generic Cards --- */
+.eq-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  overflow: hidden;
+}
+
+.eq-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.eq-card-header {
+  background-color: var(--pure-white);
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 1rem 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.eq-card-header.navy {
+  background-color: var(--primary-navy);
+  color: var(--pure-white);
+  border-bottom: 2px solid var(--accent-gold);
+}
+
+.eq-card-header.navy h5 {
+  color: var(--pure-white);
+  margin: 0;
+}
+
+.eq-card-body {
+  padding: 1.25rem;
+}
+
+/* --- Metrics Stat Widget --- */
+.stat-widget {
+  background: var(--pure-white);
+  border-left: 4px solid var(--accent-gold);
+  border-radius: 8px;
+  padding: 1.25rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.stat-widget.navy-accent {
+  border-left-color: var(--primary-navy);
+}
+
+.stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  background: var(--gold-light);
+  color: var(--accent-gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+}
+
+.stat-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--primary-navy);
+  margin-bottom: 2px;
+}
+
+.stat-label {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+/* --- Gold Buttons & Luxury Accents --- */
+.btn-gold {
+  background-color: var(--accent-gold);
+  color: var(--primary-navy);
+  font-weight: 600;
+  border: 1px solid var(--accent-gold);
+  border-radius: 6px;
+  padding: 0.6rem 1.4rem;
+  transition: all 0.2s ease;
+}
+
+.btn-gold:hover {
+  background-color: var(--gold-hover);
+  color: #000;
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.35);
+  transform: translateY(-1px);
+}
+
+.btn-navy {
+  background-color: var(--primary-navy);
+  color: var(--pure-white);
+  font-weight: 600;
+  border: 1px solid var(--primary-navy);
+  border-radius: 6px;
+  padding: 0.6rem 1.4rem;
+  transition: all 0.2s ease;
+}
+
+.btn-navy:hover {
+  background-color: var(--secondary-navy);
+  color: var(--accent-gold);
+  box-shadow: 0 4px 12px rgba(10, 25, 47, 0.25);
+  transform: translateY(-1px);
+}
+
+.btn-outline-gold {
+  background: transparent;
+  color: var(--accent-gold);
+  border: 1px solid var(--accent-gold);
+  font-weight: 600;
+  border-radius: 6px;
+  padding: 0.5rem 1.2rem;
+  transition: all 0.2s ease;
+}
+
+.btn-outline-gold:hover {
+  background-color: var(--accent-gold);
+  color: var(--primary-navy);
+}
+
+/* --- Property Card Component --- */
+.property-card {
+  background: var(--pure-white);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.property-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--accent-gold);
+}
+
+.property-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: var(--primary-navy);
+  color: var(--accent-gold);
+  font-weight: 600;
+  font-size: 0.75rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--accent-gold);
+}
+
+.property-price {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--primary-navy);
+}
+
+.property-rate {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.feature-pill {
+  font-size: 0.78rem;
+  background-color: #F1F5F9;
+  color: #334155;
+  padding: 3px 8px;
+  border-radius: 4px;
+  margin-right: 4px;
+  margin-bottom: 4px;
+  display: inline-block;
+}
+
+/* --- Valuation Result Card --- */
+.valuation-result-box {
+  background: linear-gradient(135deg, #0A192F 0%, #172A45 100%);
+  color: var(--pure-white);
+  border-radius: 12px;
+  padding: 2.2rem;
+  border: 2px solid var(--accent-gold);
+  box-shadow: 0 10px 30px rgba(10, 25, 47, 0.25);
+}
+
+.valuation-amount {
+  font-size: 3.2rem;
+  font-weight: 800;
+  color: var(--accent-gold);
+  line-height: 1.1;
+  text-shadow: 0 2px 10px rgba(212, 175, 55, 0.3);
+}
+
+.uncertainty-badge {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 4px 14px;
+  display: inline-block;
+  font-size: 0.85rem;
+  color: #E2E8F0;
+}
+
+/* --- Form Controls --- */
+.form-label {
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--primary-navy);
+  margin-bottom: 4px;
+}
+
+.form-control, .form-select {
+  border: 1.5px solid #CBD5E1;
+  border-radius: 6px;
+  padding: 0.6rem 0.85rem;
+  font-size: 0.92rem;
+  transition: all 0.2s ease;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: var(--accent-gold);
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2);
+}
+
+/* --- Leaflet Map Container --- */
+#map {
+  height: 600px;
+  width: 100%;
+  border-radius: 10px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-subtle);
+  z-index: 1;
+}
+
+/* --- Footer --- */
+.estateiq-footer {
+  background-color: var(--primary-navy);
+  color: #94A3B8;
+  border-top: 3px solid var(--accent-gold);
+  padding: 3rem 0 1.5rem 0;
+  margin-top: auto;
+}
+
+.estateiq-footer h6 {
+  color: var(--pure-white);
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.estateiq-footer a {
+  color: #CBD5E1;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.estateiq-footer a:hover {
+  color: var(--accent-gold);
+}

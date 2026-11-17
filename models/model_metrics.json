@@ -1,0 +1,170 @@
+{
+    "best_model_name": "Gradient Boosting Regressor",
+    "best_r2": 0.9593,
+    "total_records": 3200,
+    "train_samples": 2560,
+    "test_samples": 640,
+    "models_evaluated": {
+        "Linear Regression": {
+            "MAE": 5766571.08,
+            "MSE": 114446382994235.9,
+            "RMSE": 10697961.63,
+            "R2_Score": 0.7971,
+            "Train_R2": 0.8239,
+            "MAPE": 36.99
+        },
+        "Decision Tree Regressor": {
+            "MAE": 5450376.23,
+            "MSE": 83055589372511.11,
+            "RMSE": 9113483.93,
+            "R2_Score": 0.8528,
+            "Train_R2": 0.9645,
+            "MAPE": 26.27
+        },
+        "Random Forest Regressor": {
+            "MAE": 4148198.86,
+            "MSE": 45294087700382.16,
+            "RMSE": 6730088.24,
+            "R2_Score": 0.9197,
+            "Train_R2": 0.9724,
+            "MAPE": 20.36
+        },
+        "Gradient Boosting Regressor": {
+            "MAE": 2558616.42,
+            "MSE": 22962084793218.8,
+            "RMSE": 4791876.96,
+            "R2_Score": 0.9593,
+            "Train_R2": 0.9959,
+            "MAPE": 10.59
+        },
+        "XGBoost Regressor": {
+            "MAE": 2780842.5,
+            "MSE": 24690764546048.0,
+            "RMSE": 4968980.23,
+            "R2_Score": 0.9562,
+            "Train_R2": 0.9939,
+            "MAPE": 11.54
+        }
+    },
+    "numeric_features": [
+        "area_sqft",
+        "bedrooms",
+        "bathrooms",
+        "balcony",
+        "property_age",
+        "parking",
+        "floor_number",
+        "total_floors",
+        "num_amenities",
+        "floor_ratio"
+    ],
+    "categorical_features": [
+        "city",
+        "area_name",
+        "property_type",
+        "furnishing",
+        "facing"
+    ],
+    "top_feature_importances": [
+        {
+            "feature": "area_sqft",
+            "importance": 0.4062
+        },
+        {
+            "feature": "city_Mumbai",
+            "importance": 0.16948
+        },
+        {
+            "feature": "area_name_Worli",
+            "importance": 0.12673
+        },
+        {
+            "feature": "area_name_Bandra West",
+            "importance": 0.07054
+        },
+        {
+            "feature": "area_name_Vasant Kunj",
+            "importance": 0.02206
+        },
+        {
+            "feature": "area_name_Greater Kailash I",
+            "importance": 0.01762
+        },
+        {
+            "feature": "area_name_Golf Course Road",
+            "importance": 0.01707
+        },
+        {
+            "feature": "city_Gurgaon",
+            "importance": 0.01654
+        },
+        {
+            "feature": "city_Delhi",
+            "importance": 0.0146
+        },
+        {
+            "feature": "area_name_Banjara Hills",
+            "importance": 0.01027
+        },
+        {
+            "feature": "area_name_Jubilee Hills",
+            "importance": 0.0086
+        },
+        {
+            "feature": "property_age",
+            "importance": 0.00836
+        },
+        {
+            "feature": "property_type_Penthouse",
+            "importance": 0.00821
+        },
+        {
+            "feature": "property_type_Apartment",
+            "importance": 0.0082
+        },
+        {
+            "feature": "area_name_Indiranagar",
+            "importance": 0.00712
+        },
+        {
+            "feature": "area_name_DLF Phase 5",
+            "importance": 0.00674
+        },
+        {
+            "feature": "area_name_Thane West",
+            "importance": 0.00618
+        },
+        {
+            "feature": "area_name_Adyar",
+            "importance": 0.00605
+        },
+        {
+            "feature": "city_Jaipur",
+            "importance": 0.0049
+        },
+        {
+            "feature": "num_amenities",
+            "importance": 0.00406
+        },
+        {
+            "feature": "property_type_Villa",
+            "importance": 0.00369
+        },
+        {
+            "feature": "area_name_Garia",
+            "importance": 0.00321
+        },
+        {
+            "feature": "area_name_Sohna Road Sector 48",
+            "importance": 0.00321
+        },
+        {
+            "feature": "city_Ahmedabad",
+            "importance": 0.00301
+        },
+        {
+            "feature": "area_name_Alipore",
+            "importance": 0.00291
+        }
+    ]
+}

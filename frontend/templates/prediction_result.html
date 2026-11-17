@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+
+{% block title %}Valuation Result - ESTATEIQ AI Appraisal{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <!-- Top Navigation & Action -->
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb small mb-1">
+          <li class="breadcrumb-item"><a href="{{ url_for('index') }}" class="text-decoration-none">Home</a></li>
+          <li class="breadcrumb-item"><a href="{{ url_for('predict') }}" class="text-decoration-none">Predict</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Appraisal Dossier</li>
+        </ol>
+      </nav>
+      <h2 class="fw-bold text-navy mb-0">
+        Valuation Dossier: <span class="text-warning">{{ prop_data.area_name }}, {{ prop_data.city }}</span>
+      </h2>
+    </div>
+
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('download_report_latest') }}" class="btn btn-gold shadow-sm">
+        <i class="fa-solid fa-file-pdf me-2"></i> Download Certified PDF Report
+      </a>
+      <a href="{{ url_for('predict') }}" class="btn btn-outline-navy">
+        <i class="fa-solid fa-rotate-left me-1"></i> New Appraisal
+      </a>
+    </div>
+  </div>
+
+  <!-- Primary Valuation Box -->
+  <div class="valuation-result-box mb-4 position-relative">
+    <div class="row align-items-center">
+      <div class="col-lg-7">
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <span class="badge bg-warning text-dark fw-bold">CERTIFIED AI VALUATION</span>
+          <span class="small text-light"><i class="fa-solid fa-clock me-1"></i> Real-Time Inference</span>
+        </div>
+        <div class="text-uppercase small letter-spacing-1 text-light opacity-75">Estimated Fair Market Value</div>
+        <div class="valuation-amount my-1">{{ result.predicted_price_formatted }}</div>
+        <div class="text-light mb-3 font-monospace">{{ result.predicted_price_full }}</div>
+
+        <div class="d-flex flex-wrap gap-3 align-items-center">
+          <div class="uncertainty-badge">
+            <i class="fa-solid fa-chart-line text-warning me-1"></i> Rate: <strong>{{ result.price_per_sqft_formatted }}</strong>
+          </div>
+          <div class="uncertainty-badge">
+            <i class="fa-solid fa-arrows-left-right text-info me-1"></i> 90% Confidence Interval: <strong>{{ result.uncertainty_range }}</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-5 text-lg-end mt-4 mt-lg-0">
+        <div class="p-3 rounded-3 d-inline-block text-start w-100" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(212,175,55,0.3); max-width: 380px;">
+          <div class="small text-warning fw-bold mb-2"><i class="fa-solid fa-circle-info me-1"></i> Appraisal Summary</div>
+          <div class="small text-light mb-1"><strong>Configuration:</strong> {{ prop_data.bedrooms }} BHK ({{ prop_data.bathrooms }} Baths)</div>
+          <div class="small text-light mb-1"><strong>Built-up Area:</strong> {{ prop_data.area_sqft }} sq.ft</div>
+          <div class="small text-light mb-1"><strong>Property Type:</strong> {{ prop_data.property_type }}</div>
+          <div class="small text-light mb-1"><strong>Location:</strong> {{ prop_data.area_name }}, {{ prop_data.city }}</div>
+          <div class="small text-light mb-1"><strong>Algorithm:</strong> {{ result.model_used.replace('_', ' ').title() }}</div>
+          <hr class="border-secondary my-2">
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="small text-success"><i class="fa-solid fa-circle-check me-1"></i> High Confidence</span>
+            <a href="{{ url_for('download_report_latest') }}" class="btn btn-sm btn-gold py-1 px-3">
+              <i class="fa-solid fa-download me-1"></i> Get PDF
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Left Column: SHAP Explainability & Factor Contribution -->
+    <div class="col-lg-7">
+      <div class="eq-card h-100">
+        <div class="eq-card-header navy">
+          <h5 class="fw-bold mb-0">
+            <i class="fa-solid fa-brain text-warning me-2"></i>AI Price Explanation (SHAP Attribution)
+          </h5>
+          <span class="badge bg-light text-dark small">Local Attribution</span>
+        </div>
+        <div class="eq-card-body">
+          <p class="small text-muted mb-3">
+            SHAP (SHapley Additive exPlanations) values quantify how each architectural and spatial attribute pushes the predicted valuation above or below baseline metro averages.
+          </p>
+
+          <!-- Interactive Chart Canvas -->
+          <div style="height: 280px;" class="mb-4">
+            <canvas id="shapChart"></canvas>
+          </div>
+
+          <!-- Tabular Value Drivers -->
+          <h6 class="fw-bold text-navy mb-2">Key Valuation Drivers Breakdown:</h6>
+          <div class="table-responsive">
+            <table class="table table-sm table-hover align-middle small mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Influencing Attribute</th>
+                  <th>Direction</th>
+                  <th class="text-end">Impact Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for factor in result.shap_breakdown %}
+                <tr>
+                  <td>
+                    <strong>{{ factor.factor }}</strong>
+                  </td>
+                  <td>
+                    {% if factor.is_positive %}
+                      <span class="badge bg-success-subtle text-success border border-success">
+                        <i class="fa-solid fa-arrow-up me-1"></i> Value Booster
+                      </span>
+                    {% else %}
+                      <span class="badge bg-danger-subtle text-danger border border-danger">
+                        <i class="fa-solid fa-arrow-down me-1"></i> Value Discount
+                      </span>
+                    {% endif %}
+                  </td>
+                  <td class="text-end font-monospace fw-bold">
+                    {% if factor.is_positive %}+{% endif %}{{ factor.impact_formatted }}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Specs & Similar Properties -->
+    <div class="col-lg-5">
+      <!-- Full Spec Summary -->
+      <div class="eq-card mb-4">
+        <div class="eq-card-header navy">
+          <h5 class="fw-bold mb-0">
+            <i class="fa-solid fa-list-check text-warning me-2"></i>Appraised Attributes
+          </h5>
+        </div>
+        <div class="eq-card-body">
+          <div class="row g-2 small">
+            <div class="col-6"><strong>PIN Code:</strong> {{ prop_data.pincode }}</div>
+            <div class="col-6"><strong>Property Age:</strong> {{ prop_data.property_age }} yrs</div>
+            <div class="col-6"><strong>Furnishing:</strong> {{ prop_data.furnishing }}</div>
+            <div class="col-6"><strong>Parking:</strong> {{ prop_data.parking }} Bay(s)</div>
+            <div class="col-6"><strong>Floor:</strong> {{ prop_data.floor_number }} of {{ prop_data.total_floors }}</div>
+            <div class="col-6"><strong>Facing:</strong> {{ prop_data.facing }}</div>
+            <div class="col-12 mt-2">
+              <strong>Amenities:</strong><br>
+              <span class="text-muted">{{ prop_data.amenities.replace(';', ', ') }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Comparative Market Analysis: Similar Properties -->
+      <div class="eq-card">
+        <div class="eq-card-header navy">
+          <h5 class="fw-bold mb-0">
+            <i class="fa-solid fa-building-circle-check text-warning me-2"></i>Locality Market Benchmarks
+          </h5>
+        </div>
+        <div class="eq-card-body p-0">
+          <div class="list-group list-group-flush">
+            {% for sim in result.similar_properties %}
+            <div class="list-group-item p-3">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="fw-bold text-navy">{{ sim.property_id }} &bull; {{ sim.area_name }}</span>
+                <span class="fw-bold text-success">{{ sim.price_formatted }}</span>
+              </div>
+              <div class="small text-muted d-flex justify-content-between">
+                <span>{{ sim.bedrooms }} BHK &bull; {{ sim.area_sqft }} sq.ft &bull; {{ sim.property_type }}</span>
+                <span class="badge bg-light text-dark border">{{ sim.price_per_sqft }}</span>
+              </div>
+              <div class="mt-2 text-end">
+                <a href="{{ url_for('comparison', p1=sim.property_id) }}" class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size: 0.75rem;">
+                  <i class="fa-solid fa-code-compare me-1"></i> Compare with This
+                </a>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  // Render SHAP Factor Contribution Chart
+  const factorsData = {{ result.shap_breakdown|tojson }};
+  const labels = factorsData.map(f => f.factor);
+  const values = factorsData.map(f => f.impact_inr / 100000); // In Lakhs
+  const backgroundColors = factorsData.map(f => f.is_positive ? '#10B981' : '#EF4444');
+
+  const ctx = document.getElementById('shapChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Impact on Price (₹ Lakhs)',
+        data: values,
+        backgroundColor: backgroundColors,
+        borderRadius: 4
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              const val = context.raw;
+              return (val >= 0 ? '+₹ ' : '-₹ ') + Math.abs(val).toFixed(2) + ' Lakhs';
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          title: { display: true, text: 'Valuation Adjustment (₹ in Lakhs)' },
+          grid: { color: '#E2E8F0' }
+        },
+        y: {
+          grid: { display: false }
+        }
+      }
+    }
+  });
+</script>
+{% endblock %}

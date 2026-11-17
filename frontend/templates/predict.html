@@ -1,0 +1,321 @@
+{% extends "base.html" %}
+
+{% block title %}Smart House Price Prediction - ESTATEIQ{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <!-- Breadcrumb & Header -->
+  <div class="row mb-3">
+    <div class="col-12">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb small">
+          <li class="breadcrumb-item"><a href="{{ url_for('index') }}" class="text-decoration-none">Home</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Smart House Price Prediction</li>
+        </ol>
+      </nav>
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+          <h2 class="fw-bold text-navy mb-1">
+            <i class="fa-solid fa-calculator text-warning me-2"></i>Smart House Price Predictor
+          </h2>
+          <p class="text-muted small mb-0">
+            Configure architectural, geographical, and facility attributes to generate an instant ML-powered appraisal.
+          </p>
+        </div>
+        <span class="badge bg-navy px-3 py-2 text-warning border border-warning">
+          <i class="fa-solid fa-shield-halved me-1"></i> Multi-Algorithm Ensemble Engine
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <form action="{{ url_for('predict') }}" method="POST" id="predictionForm">
+    <div class="row g-4">
+      
+      <!-- Left Column: Spatial & Location Details -->
+      <div class="col-lg-6">
+        <div class="eq-card mb-4">
+          <div class="eq-card-header navy">
+            <h5 class="fw-bold mb-0"><i class="fa-solid fa-map-location-dot text-warning me-2"></i>1. Geographical & Location Specs</h5>
+          </div>
+          <div class="eq-card-body">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">State <span class="text-danger">*</span></label>
+                <select name="state" id="stateSelect" class="form-select" required>
+                  {% for s in states %}
+                    <option value="{{ s }}" {% if s == 'Karnataka' %}selected{% endif %}>{{ s }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label">Metro City <span class="text-danger">*</span></label>
+                <select name="city" id="citySelect" class="form-select" required>
+                  <!-- Populated dynamically via JS -->
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label">Locality / Area Name <span class="text-danger">*</span></label>
+                <select name="area_name" id="areaSelect" class="form-select" required>
+                  <!-- Populated dynamically via JS -->
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label">PIN Code</label>
+                <input type="number" name="pincode" id="pincodeInput" class="form-control" value="560066" required>
+              </div>
+
+              <div class="col-md-12">
+                <label class="form-label">District / Administrative Division</label>
+                <input type="text" name="district" id="districtInput" class="form-control" value="Bengaluru Urban">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Property Physical Architecture -->
+        <div class="eq-card">
+          <div class="eq-card-header navy">
+            <h5 class="fw-bold mb-0"><i class="fa-solid fa-ruler-combined text-warning me-2"></i>2. Architecture & Space Metrics</h5>
+          </div>
+          <div class="eq-card-body">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Super Built-up Area (Sq.Ft) <span class="text-danger">*</span></label>
+                <div class="input-group">
+                  <input type="number" name="area_sqft" class="form-control" value="1450" min="300" max="15000" required>
+                  <span class="input-group-text">sq.ft</span>
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label">Bedrooms (BHK) <span class="text-danger">*</span></label>
+                <select name="bedrooms" class="form-select" required>
+                  <option value="1">1 BHK</option>
+                  <option value="2">2 BHK</option>
+                  <option value="3" selected>3 BHK</option>
+                  <option value="4">4 BHK</option>
+                  <option value="5">5+ BHK</option>
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label">Bathrooms</label>
+                <select name="bathrooms" class="form-select">
+                  <option value="1">1 Bathroom</option>
+                  <option value="2">2 Bathrooms</option>
+                  <option value="3" selected>3 Bathrooms</option>
+                  <option value="4">4 Bathrooms</option>
+                  <option value="5">5+ Bathrooms</option>
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label">Balconies</label>
+                <select name="balcony" class="form-select">
+                  <option value="0">No Balcony</option>
+                  <option value="1">1 Balcony</option>
+                  <option value="2" selected>2 Balconies</option>
+                  <option value="3">3 Balconies</option>
+                  <option value="4">4+ Balconies</option>
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label">Floor Number</label>
+                <input type="number" name="floor_number" class="form-control" value="7" min="0" max="80">
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label">Total Floors in Building</label>
+                <input type="number" name="total_floors" class="form-control" value="18" min="1" max="80">
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label">Property Facing</label>
+                <select name="facing" class="form-select">
+                  <option value="East" selected>East (Vastu Preferred)</option>
+                  <option value="North">North (Vastu Preferred)</option>
+                  <option value="North-East">North-East</option>
+                  <option value="West">West</option>
+                  <option value="North-West">North-West</option>
+                  <option value="South">South</option>
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label">Reserved Parking Bays</label>
+                <select name="parking" class="form-select">
+                  <option value="0">No Reserved Parking</option>
+                  <option value="1">1 Covered Bay</option>
+                  <option value="2" selected>2 Covered Bays</option>
+                  <option value="3">3+ Covered Bays</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Property Attributes & Amenities -->
+      <div class="col-lg-6">
+        <div class="eq-card mb-4">
+          <div class="eq-card-header navy">
+            <h5 class="fw-bold mb-0"><i class="fa-solid fa-couch text-warning me-2"></i>3. Property Classification & Age</h5>
+          </div>
+          <div class="eq-card-body">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Property Type</label>
+                <select name="property_type" class="form-select">
+                  <option value="Apartment" selected>Residential Apartment</option>
+                  <option value="Independent House">Independent House</option>
+                  <option value="Villa">Luxury Villa</option>
+                  <option value="Penthouse">Sky Penthouse</option>
+                  <option value="Builder Floor">Builder Floor</option>
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label">Furnishing Status</label>
+                <select name="furnishing" class="form-select">
+                  <option value="Unfurnished">Unfurnished</option>
+                  <option value="Semi-Furnished" selected>Semi-Furnished</option>
+                  <option value="Fully Furnished">Fully Furnished</option>
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label">Property Age (Years)</label>
+                <select name="property_age" class="form-select">
+                  <option value="0">0 - Under Construction / Brand New</option>
+                  <option value="1">1 Year</option>
+                  <option value="3" selected>2 to 5 Years</option>
+                  <option value="8">6 to 10 Years</option>
+                  <option value="15">11 to 20 Years</option>
+                  <option value="25">20+ Years</option>
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label">ML Regression Algorithm</label>
+                <select name="algorithm" class="form-select border-warning">
+                  <option value="gradient_boosting_regressor" selected>Gradient Boosting (Best R²: 0.959)</option>
+                  <option value="xgboost_regressor">XGBoost Regressor (R²: 0.956)</option>
+                  <option value="random_forest_regressor">Random Forest Regressor (R²: 0.919)</option>
+                  <option value="decision_tree_regressor">Decision Tree Regressor (R²: 0.853)</option>
+                  <option value="linear_regression">Linear Regression (R²: 0.797)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Amenities Multi-Checkboxes -->
+        <div class="eq-card mb-4">
+          <div class="eq-card-header navy">
+            <h5 class="fw-bold mb-0"><i class="fa-solid fa-list-check text-warning me-2"></i>4. Gated Society Amenities</h5>
+          </div>
+          <div class="eq-card-body">
+            <p class="small text-muted mb-3">Select available society facilities influencing lifestyle and capital appreciation:</p>
+            <div class="row g-2">
+              {% set default_amenities = [
+                ("Gym", true), ("Swimming Pool", true), ("Clubhouse", true),
+                ("24x7 Security", true), ("Power Backup", true), ("Lift", true),
+                ("Children Play Area", true), ("Jogging Track", false), ("Intercom", true),
+                ("CCTV", true), ("Rainwater Harvesting", false), ("Landscaped Garden", true),
+                ("Covered Parking", true), ("Fire Safety", true)
+              ] %}
+              {% for name, checked in default_amenities %}
+              <div class="col-sm-6">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="amenities" value="{{ name }}" id="amenity_{{ loop.index }}" {% if checked %}checked{% endif %}>
+                  <label class="form-check-label small" for="amenity_{{ loop.index }}">
+                    {{ name }}
+                  </label>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Submit Action Card -->
+        <div class="p-4 rounded-3 text-center shadow-sm" style="background: linear-gradient(135deg, #0A192F, #172A45); border: 2px solid #D4AF37;">
+          <h5 class="text-white fw-bold mb-2">Execute Real-Time ML Valuation</h5>
+          <p class="text-light small mb-3">Computes price in INR, price/sqft, uncertainty margin, SHAP attribution, and similar comps.</p>
+          <button type="submit" class="btn btn-gold btn-lg w-100 shadow py-3 fw-bold">
+            <i class="fa-solid fa-calculator me-2"></i> PREDICT HOUSE PRICE NOW
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  // Locality hierarchy passed from Flask controller
+  const locHierarchy = {{ loc_hierarchy|tojson }};
+  const stateSelect = document.getElementById('stateSelect');
+  const citySelect = document.getElementById('citySelect');
+  const areaSelect = document.getElementById('areaSelect');
+  const pincodeInput = document.getElementById('pincodeInput');
+  const districtInput = document.getElementById('districtInput');
+
+  function updateCities() {
+    const selectedState = stateSelect.value;
+    const cities = Object.keys(locHierarchy[selectedState] || {});
+    citySelect.innerHTML = '';
+    
+    cities.forEach((c, idx) => {
+      const opt = document.createElement('option');
+      opt.value = c;
+      opt.textContent = c;
+      if (idx === 0) opt.selected = true;
+      citySelect.appendChild(opt);
+    });
+    
+    updateAreas();
+  }
+
+  function updateAreas() {
+    const selectedState = stateSelect.value;
+    const selectedCity = citySelect.value;
+    const areas = (locHierarchy[selectedState] && locHierarchy[selectedState][selectedCity]) || [];
+    areaSelect.innerHTML = '';
+    
+    areas.forEach((a, idx) => {
+      const opt = document.createElement('option');
+      opt.value = a.area;
+      opt.textContent = a.area;
+      opt.dataset.pincode = a.pincode;
+      if (idx === 0) opt.selected = true;
+      areaSelect.appendChild(opt);
+    });
+
+    if (areas.length > 0) {
+      pincodeInput.value = areas[0].pincode;
+      districtInput.value = selectedCity + ' District';
+    }
+  }
+
+  areaSelect.addEventListener('change', function() {
+    const selectedOpt = areaSelect.options[areaSelect.selectedIndex];
+    if (selectedOpt && selectedOpt.dataset.pincode) {
+      pincodeInput.value = selectedOpt.dataset.pincode;
+    }
+  });
+
+  stateSelect.addEventListener('change', updateCities);
+  citySelect.addEventListener('change', updateAreas);
+
+  // Initialize on page load
+  updateCities();
+</script>
+{% endblock %}

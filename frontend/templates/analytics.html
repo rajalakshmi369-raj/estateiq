@@ -1,0 +1,305 @@
+{% extends "base.html" %}
+
+{% block title %}Market Analytics Dashboard - ESTATEIQ{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb small mb-1">
+          <li class="breadcrumb-item"><a href="{{ url_for('index') }}" class="text-decoration-none">Home</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Market Analytics</li>
+        </ol>
+      </nav>
+      <h2 class="fw-bold text-navy mb-0">
+        <i class="fa-solid fa-chart-line text-warning me-2"></i>Indian Real Estate Market Analytics Dashboard
+      </h2>
+      <p class="text-muted small mb-0">Exploratory Data Analysis (EDA) and econometric distributions derived from 3,200 verified property records.</p>
+    </div>
+
+    <div>
+      <span class="badge bg-navy text-warning p-2 border border-warning">
+        <i class="fa-solid fa-database me-1"></i> 3,200 Transaction Samples
+      </span>
+    </div>
+  </div>
+
+  <!-- Row 1: City & State Price Charts -->
+  <div class="row g-4 mb-4">
+    <!-- City Avg Price Bar Chart -->
+    <div class="col-lg-6">
+      <div class="eq-card h-100">
+        <div class="eq-card-header navy">
+          <h5 class="fw-bold mb-0"><i class="fa-solid fa-city text-warning me-2"></i>Average Property Valuation by Indian Metro</h5>
+          <span class="badge bg-light text-dark small">₹ in Lakhs</span>
+        </div>
+        <div class="eq-card-body">
+          <div style="height: 320px;">
+            <canvas id="cityPriceChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- State Comparison Horizontal Bar Chart -->
+    <div class="col-lg-6">
+      <div class="eq-card h-100">
+        <div class="eq-card-header navy">
+          <h5 class="fw-bold mb-0"><i class="fa-solid fa-map text-warning me-2"></i>State-Wise Real Estate Capital Deployment</h5>
+          <span class="badge bg-light text-dark small">Mean Outlay</span>
+        </div>
+        <div class="eq-card-body">
+          <div style="height: 320px;">
+            <canvas id="statePriceChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 2: BHK vs Price & Property Type Distribution -->
+  <div class="row g-4 mb-4">
+    <!-- BHK vs Price -->
+    <div class="col-lg-4">
+      <div class="eq-card h-100">
+        <div class="eq-card-header navy">
+          <h5 class="fw-bold mb-0"><i class="fa-solid fa-bed text-warning me-2"></i>Configuration vs. Mean Price</h5>
+        </div>
+        <div class="eq-card-body">
+          <div style="height: 290px;">
+            <canvas id="bhkChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Property Type Donut -->
+    <div class="col-lg-4">
+      <div class="eq-card h-100">
+        <div class="eq-card-header navy">
+          <h5 class="fw-bold mb-0"><i class="fa-solid fa-chart-pie text-warning me-2"></i>Asset Class Breakdown</h5>
+        </div>
+        <div class="eq-card-body">
+          <div style="height: 290px;">
+            <canvas id="typeDonutChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Property Age Depreciation Trend -->
+    <div class="col-lg-4">
+      <div class="eq-card h-100">
+        <div class="eq-card-header navy">
+          <h5 class="fw-bold mb-0"><i class="fa-solid fa-hourglass-half text-warning me-2"></i>Age vs. Valuation Curve</h5>
+        </div>
+        <div class="eq-card-body">
+          <div style="height: 290px;">
+            <canvas id="ageTrendChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 3: Interactive Plotly Heatmap & Scatter Plot -->
+  <div class="row g-4 mb-4">
+    <!-- Feature Correlation Heatmap via Plotly -->
+    <div class="col-lg-6">
+      <div class="eq-card h-100">
+        <div class="eq-card-header navy">
+          <h5 class="fw-bold mb-0"><i class="fa-solid fa-table-cells text-warning me-2"></i>Feature Correlation Matrix (Pearson's r)</h5>
+        </div>
+        <div class="eq-card-body p-2">
+          <div id="plotlyCorrelationHeatmap" style="height: 380px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rate / Sq.Ft by Metro Bar Chart -->
+    <div class="col-lg-6">
+      <div class="eq-card h-100">
+        <div class="eq-card-header navy">
+          <h5 class="fw-bold mb-0"><i class="fa-solid fa-ruler-combined text-warning me-2"></i>Average Rate Per Square Foot by Metro</h5>
+          <span class="badge bg-light text-dark small">₹ / sq.ft</span>
+        </div>
+        <div class="eq-card-body">
+          <div style="height: 360px;">
+            <canvas id="cityRateChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  const analytics = {{ data|tojson }};
+
+  // 1. City Price Chart
+  new Chart(document.getElementById('cityPriceChart').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: analytics.cities,
+      datasets: [{
+        label: 'Average Price (₹ Lakhs)',
+        data: analytics.city_avg_prices,
+        backgroundColor: '#0A192F',
+        borderColor: '#D4AF37',
+        borderWidth: 1.5,
+        borderRadius: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: { title: { display: true, text: 'Average Price (₹ Lakhs)' }, grid: { color: '#E2E8F0' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // 2. State Price Horizontal Bar
+  new Chart(document.getElementById('statePriceChart').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: analytics.states,
+      datasets: [{
+        label: 'Mean State Outlay (₹ Lakhs)',
+        data: analytics.state_avg_prices,
+        backgroundColor: '#D4AF37',
+        borderColor: '#0A192F',
+        borderWidth: 1,
+        borderRadius: 4
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        x: { title: { display: true, text: '₹ in Lakhs' }, grid: { color: '#E2E8F0' } },
+        y: { grid: { display: false } }
+      }
+    }
+  });
+
+  // 3. BHK vs Price
+  new Chart(document.getElementById('bhkChart').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: analytics.bhks,
+      datasets: [{
+        label: 'Avg Price (₹ Lakhs)',
+        data: analytics.bhk_prices,
+        backgroundColor: '#2563EB',
+        borderRadius: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { title: { display: true, text: '₹ in Lakhs' }, grid: { color: '#E2E8F0' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // 4. Asset Type Donut
+  new Chart(document.getElementById('typeDonutChart').getContext('2d'), {
+    type: 'doughnut',
+    data: {
+      labels: analytics.types,
+      datasets: [{
+        data: analytics.type_counts,
+        backgroundColor: ['#0A192F', '#D4AF37', '#10B981', '#3B82F6', '#8B5CF6']
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } }
+      }
+    }
+  });
+
+  // 5. Age Trend Curve
+  new Chart(document.getElementById('ageTrendChart').getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: analytics.ages.map(a => a + ' yrs'),
+      datasets: [{
+        label: 'Avg Price (₹ Lakhs)',
+        data: analytics.age_prices,
+        borderColor: '#DC2626',
+        backgroundColor: 'rgba(220, 38, 38, 0.1)',
+        fill: true,
+        tension: 0.3,
+        pointRadius: 3
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: { title: { display: true, text: '₹ in Lakhs' }, grid: { color: '#E2E8F0' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // 6. City Rate Per Sqft Chart
+  new Chart(document.getElementById('cityRateChart').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: analytics.cities,
+      datasets: [{
+        label: 'Price per sq.ft (₹)',
+        data: analytics.city_avg_rates,
+        backgroundColor: '#10B981',
+        borderRadius: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: { title: { display: true, text: 'Rate (₹ / sq.ft)' }, grid: { color: '#E2E8F0' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // 7. Plotly Correlation Heatmap
+  const corrCols = Object.keys(analytics.corr_matrix);
+  const zValues = corrCols.map(rowKey => corrCols.map(colKey => analytics.corr_matrix[rowKey][colKey]));
+
+  const heatmapData = [{
+    z: zValues,
+    x: corrCols,
+    y: corrCols,
+    type: 'heatmap',
+    colorscale: [
+      [0.0, '#3B82F6'],
+      [0.5, '#F1F5F9'],
+      [1.0, '#D4AF37']
+    ],
+    hoverongaps: false
+  }];
+
+  const layout = {
+    margin: { t: 30, r: 30, b: 60, l: 80 },
+    font: { family: 'Inter, sans-serif', size: 11 }
+  };
+
+  Plotly.newPlot('plotlyCorrelationHeatmap', heatmapData, layout, { responsive: true, displayModeBar: false });
+</script>
+{% endblock %}

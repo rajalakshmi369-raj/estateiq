@@ -1,0 +1,328 @@
+{% extends "base.html" %}
+
+{% block title %}India Location Intelligence - ESTATEIQ GIS Mapping{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <div>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb small mb-1">
+          <li class="breadcrumb-item"><a href="{{ url_for('index') }}" class="text-decoration-none">Home</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Location Intelligence</li>
+        </ol>
+      </nav>
+      <h2 class="fw-bold text-navy mb-0">
+        <i class="fa-solid fa-map-location-dot text-warning me-2"></i>India Spatial Realty Intelligence
+      </h2>
+      <p class="text-muted small mb-0">Interactive GIS appraisal mapping across 61+ localities and 12 Indian metropolitan corridors.</p>
+    </div>
+
+    <!-- Filters -->
+    <div class="d-flex gap-2">
+      <select id="stateFilter" class="form-select form-select-sm" style="min-width: 150px;">
+        <option value="All">All States</option>
+        {% for s in states %}
+          <option value="{{ s }}">{{ s }}</option>
+        {% endfor %}
+      </select>
+
+      <select id="cityFilter" class="form-select form-select-sm" style="min-width: 150px;">
+        <option value="All">All Cities</option>
+        {% for c in cities %}
+          <option value="{{ c }}">{{ c }}</option>
+        {% endfor %}
+      </select>
+
+      <button id="resetMapBtn" class="btn btn-sm btn-outline-secondary">
+        <i class="fa-solid fa-rotate me-1"></i> Reset View
+      </button>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Map Container -->
+    <div class="col-lg-8">
+      <div class="eq-card p-2 position-relative">
+        <div id="map"></div>
+        
+        <!-- Map Legend Floating Card -->
+        <div class="position-absolute bottom-0 start-0 m-4 p-3 rounded shadow-sm bg-white" style="z-index: 1000; border: 1px solid #E2E8F0; opacity: 0.95;">
+          <h6 class="fw-bold mb-2 small text-navy"><i class="fa-solid fa-layer-group text-warning me-1"></i> Rate / Sq.Ft Tiers</h6>
+          <div class="d-flex align-items-center small mb-1">
+            <span style="display:inline-block; width:12px; height:12px; background-color:#8B5CF6; border-radius:50%; margin-right:8px;"></span>
+            <span>Super-Luxury (&gt; ₹ 20,000/sqft)</span>
+          </div>
+          <div class="d-flex align-items-center small mb-1">
+            <span style="display:inline-block; width:12px; height:12px; background-color:#0A192F; border-radius:50%; margin-right:8px;"></span>
+            <span>Premium (₹ 11,000 - ₹ 20,000)</span>
+          </div>
+          <div class="d-flex align-items-center small">
+            <span style="display:inline-block; width:12px; height:12px; background-color:#10B981; border-radius:50%; margin-right:8px;"></span>
+            <span>Affordable / Mid (&lt; ₹ 11,000)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Locality Detail / Selected Sidebar -->
+    <div class="col-lg-4">
+      <div class="eq-card h-100">
+        <div class="eq-card-header navy">
+          <h5 class="fw-bold mb-0">
+            <i class="fa-solid fa-circle-nodes text-warning me-2"></i>Locality Intelligence Hub
+          </h5>
+        </div>
+        <div class="eq-card-body">
+          <div id="localityCardPlaceholder" class="text-center py-5 text-muted">
+            <i class="fa-solid fa-map-pin fa-3x text-warning mb-3"></i>
+            <h6 class="fw-bold">Select a Locality Pin on Map</h6>
+            <p class="small">Click any colored marker on the India map to inspect locality metrics, price per square foot, and quick prediction links.</p>
+          </div>
+
+          <div id="localityCardActive" class="d-none">
+            <span id="locTierBadge" class="badge bg-warning text-dark mb-2">Super-Luxury</span>
+            <h4 id="locAreaName" class="fw-bold text-navy mb-1">Bandra West</h4>
+            <p id="locCityState" class="text-muted small mb-3">Mumbai, Maharashtra &bull; PIN: 400050</p>
+
+            <div class="p-3 rounded mb-3" style="background-color: #F8FAFC; border: 1px solid #E2E8F0;">
+              <div class="small text-muted">Average Rate Per Sq.Ft</div>
+              <div id="locAvgRate" class="h3 fw-bold text-navy mb-0">₹ 42,000 / sq.ft</div>
+            </div>
+
+            <div class="row g-2 mb-3 small">
+              <div class="col-6">
+                <div class="p-2 border rounded">
+                  <div class="text-muted">Total Listings</div>
+                  <strong id="locListingsCount">54 Properties</strong>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="p-2 border rounded">
+                  <div class="text-muted">Appraisal Zone</div>
+                  <strong id="locZoneText">Western Suburbs</strong>
+                </div>
+              </div>
+            </div>
+
+            <div class="d-grid gap-2">
+              <a id="locAppraiseBtn" href="{{ url_for('predict') }}" class="btn btn-gold btn-sm">
+                <i class="fa-solid fa-calculator me-1"></i> Appraise Property Here
+              </a>
+              <a id="locSearchBtn" href="{{ url_for('recommendations') }}" class="btn btn-navy btn-sm">
+                <i class="fa-solid fa-list me-1"></i> View Listings in Locality
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Locality Intelligence Data Table -->
+  <div class="row mt-4">
+    <div class="col-12">
+      <div class="eq-card">
+        <div class="eq-card-header">
+          <h5 class="fw-bold text-navy mb-0">
+            <i class="fa-solid fa-table-list text-warning me-2"></i>Comprehensive Locality Analytics Directory
+          </h5>
+          <span class="badge bg-navy text-light">{{ locations|length }} Key Micro-Markets</span>
+        </div>
+        <div class="eq-card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 small" id="locationsTable">
+              <thead class="table-light">
+                <tr>
+                  <th>Locality / Micro-Market</th>
+                  <th>City</th>
+                  <th>State</th>
+                  <th>PIN Code</th>
+                  <th>Tier Classification</th>
+                  <th class="text-end">Average Price / Sq.Ft</th>
+                  <th class="text-center">Active Records</th>
+                  <th class="text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for loc in locations %}
+                <tr data-city="{{ loc.city }}" data-state="{{ loc.state }}">
+                  <td><strong>{{ loc.area_name }}</strong></td>
+                  <td>{{ loc.city }}</td>
+                  <td>{{ loc.state }}</td>
+                  <td>{{ loc.pincode }}</td>
+                  <td>
+                    {% if loc.tier == 'Super-Luxury' %}
+                      <span class="badge bg-purple text-light" style="background-color: #8B5CF6;">Super-Luxury</span>
+                    {% elif loc.tier == 'Premium' %}
+                      <span class="badge bg-navy text-warning">Premium</span>
+                    {% else %}
+                      <span class="badge bg-success-subtle text-success border border-success">Mid-Affordable</span>
+                    {% endif %}
+                  </td>
+                  <td class="text-end fw-bold text-navy">₹ {{ "{:,}".format(loc.avg_price_sqft) }}</td>
+                  <td class="text-center"><span class="badge bg-light text-dark border">{{ loc.total_properties }}</span></td>
+                  <td class="text-center">
+                    <button class="btn btn-sm btn-outline-warning py-0 px-2 view-on-map-btn" 
+                            data-lat="{{ loc.latitude }}" data-lon="{{ loc.longitude }}" data-area="{{ loc.area_name }}"
+                            data-city="{{ loc.city }}" data-state="{{ loc.state }}" data-rate="{{ loc.avg_price_sqft }}"
+                            data-tier="{{ loc.tier }}" data-props="{{ loc.total_properties }}">
+                      <i class="fa-solid fa-crosshairs me-1"></i> Focus
+                    </button>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  const locationsData = {{ locations|tojson }};
+  
+  // Initialize Leaflet Map centered on India
+  const map = L.map('map').setView([21.5, 78.5], 5);
+  
+  // OpenStreetMap Tile Layer
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 18,
+    attribution: '&copy; OpenStreetMap contributors | ESTATEIQ'
+  }).addTo(map);
+
+  const markers = [];
+
+  function getMarkerColor(rate) {
+    if (rate > 20000) return '#8B5CF6'; // Super Luxury
+    if (rate > 11000) return '#0A192F'; // Premium
+    return '#10B981'; // Mid/Affordable
+  }
+
+  function renderMarkers(filteredLocs) {
+    // Clear existing
+    markers.forEach(m => map.removeLayer(m));
+    markers.length = 0;
+
+    filteredLocs.forEach(loc => {
+      const color = getMarkerColor(loc.avg_price_sqft);
+      const circle = L.circleMarker([loc.latitude, loc.longitude], {
+        radius: Math.min(16, Math.max(8, loc.total_properties / 3)),
+        fillColor: color,
+        color: '#FFFFFF',
+        weight: 2,
+        opacity: 1,
+        fillOpacity: 0.85
+      }).addTo(map);
+
+      const popupHtml = `
+        <div style="font-family: 'Inter', sans-serif; font-size: 13px; line-height: 1.4;">
+          <strong style="color: #0A192F; font-size: 14px;">${loc.area_name}</strong><br>
+          <span style="color: #64748B;">${loc.city}, ${loc.state}</span><br>
+          <span style="display:inline-block; margin-top:4px; font-weight:700; color:#D4AF37;">
+            ₹ ${loc.avg_price_sqft.toLocaleString()} / sq.ft
+          </span><br>
+          <span class="badge" style="background:#0A192F; color:#D4AF37; margin-top:4px;">${loc.tier}</span>
+        </div>
+      `;
+      circle.bindPopup(popupHtml);
+
+      circle.on('click', () => {
+        selectLocality(loc);
+      });
+
+      markers.push(circle);
+    });
+  }
+
+  function selectLocality(loc) {
+    document.getElementById('localityCardPlaceholder').classList.add('d-none');
+    document.getElementById('localityCardActive').classList.remove('d-none');
+
+    document.getElementById('locAreaName').textContent = loc.area_name;
+    document.getElementById('locCityState').textContent = `${loc.city}, ${loc.state} • PIN: ${loc.pincode}`;
+    document.getElementById('locAvgRate').textContent = `₹ ${loc.avg_price_sqft.toLocaleString()} / sq.ft`;
+    document.getElementById('locListingsCount').textContent = `${loc.total_properties} Active Records`;
+    document.getElementById('locTierBadge').textContent = loc.tier;
+    document.getElementById('locZoneText').textContent = loc.city + ' Urban';
+
+    document.getElementById('locAppraiseBtn').href = `{{ url_for('predict') }}?city=${encodeURIComponent(loc.city)}&area=${encodeURIComponent(loc.area_name)}`;
+    document.getElementById('locSearchBtn').href = `{{ url_for('recommendations') }}?city=${encodeURIComponent(loc.city)}`;
+  }
+
+  // Initial render
+  renderMarkers(locationsData);
+
+  // Filter handlers
+  const stateFilter = document.getElementById('stateFilter');
+  const cityFilter = document.getElementById('cityFilter');
+  const tableRows = document.querySelectorAll('#locationsTable tbody tr');
+
+  function filterMapAndTable() {
+    const selectedState = stateFilter.value;
+    const selectedCity = cityFilter.value;
+
+    const filtered = locationsData.filter(loc => {
+      const matchState = (selectedState === 'All' || loc.state === selectedState);
+      const matchCity = (selectedCity === 'All' || loc.city === selectedCity);
+      return matchState && matchCity;
+    });
+
+    renderMarkers(filtered);
+
+    // Zoom map if filtered to a single city
+    if (selectedCity !== 'All' && filtered.length > 0) {
+      map.setView([filtered[0].latitude, filtered[0].longitude], 11);
+    } else if (selectedState !== 'All' && filtered.length > 0) {
+      map.setView([filtered[0].latitude, filtered[0].longitude], 7);
+    } else {
+      map.setView([21.5, 78.5], 5);
+    }
+
+    // Filter table
+    tableRows.forEach(row => {
+      const rCity = row.dataset.city;
+      const rState = row.dataset.state;
+      const matchState = (selectedState === 'All' || rState === selectedState);
+      const matchCity = (selectedCity === 'All' || rCity === selectedCity);
+      row.style.display = (matchState && matchCity) ? '' : 'none';
+    });
+  }
+
+  stateFilter.addEventListener('change', filterMapAndTable);
+  cityFilter.addEventListener('change', filterMapAndTable);
+
+  document.getElementById('resetMapBtn').addEventListener('click', () => {
+    stateFilter.value = 'All';
+    cityFilter.value = 'All';
+    filterMapAndTable();
+    map.setView([21.5, 78.5], 5);
+  });
+
+  // Focus button in table
+  document.querySelectorAll('.view-on-map-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const lat = parseFloat(this.dataset.lat);
+      const lon = parseFloat(this.dataset.lon);
+      map.setView([lat, lon], 13);
+
+      const loc = {
+        area_name: this.dataset.area,
+        city: this.dataset.city,
+        state: this.dataset.state,
+        avg_price_sqft: parseInt(this.dataset.rate),
+        tier: this.dataset.tier,
+        total_properties: parseInt(this.dataset.props),
+        pincode: ''
+      };
+      selectLocality(loc);
+      window.scrollTo({ top: 120, behavior: 'smooth' });
+    });
+  });
+</script>
+{% endblock %}

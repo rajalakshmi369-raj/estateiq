@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block title %}AI Price Explanation & SHAP Interpretability - ESTATEIQ{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb small mb-1">
+          <li class="breadcrumb-item"><a href="{{ url_for('index') }}" class="text-decoration-none">Home</a></li>
+          <li class="breadcrumb-item active" aria-current="page">AI Explainability</li>
+        </ol>
+      </nav>
+      <h2 class="fw-bold text-navy mb-0">
+        <i class="fa-solid fa-brain text-warning me-2"></i>Machine Learning Explainability & Feature Attribution
+      </h2>
+      <p class="text-muted small mb-0">Game-theoretic SHAP interpretability and comparative model evaluation across 5 algorithms.</p>
+    </div>
+
+    <span class="badge bg-success-subtle text-success p-2 border border-success">
+      <i class="fa-solid fa-check-double me-1"></i> Transparent AI Architecture
+    </span>
+  </div>
+
+  <!-- Row 1: Model Comparison Table -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="eq-card">
+        <div class="eq-card-header navy">
+          <h5 class="fw-bold mb-0">
+            <i class="fa-solid fa-trophy text-warning me-2"></i>5 Regression Algorithms Performance Benchmark
+          </h5>
+          <span class="badge bg-warning text-dark">Evaluated on 640 Holdout Test Samples</span>
+        </div>
+        <div class="eq-card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 text-center small">
+              <thead class="table-light">
+                <tr>
+                  <th class="text-start">Algorithm</th>
+                  <th>R² Score (Accuracy)</th>
+                  <th>RMSE (Root Mean Sq. Error)</th>
+                  <th>MAE (Mean Absolute Error)</th>
+                  <th>MAPE (% Error)</th>
+                  <th>Generalization (Train R²)</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% set models = meta.get('models_evaluated', {}) %}
+                {% for name, m in models.items() %}
+                <tr {% if name == meta.get('best_model_name') %}class="table-warning fw-bold"{% endif %}>
+                  <td class="text-start">
+                    <i class="fa-solid fa-gear text-muted me-2"></i><strong>{{ name }}</strong>
+                  </td>
+                  <td>
+                    <span class="badge {% if m.R2_Score > 0.95 %}bg-success{% elif m.R2_Score > 0.90 %}bg-primary{% else %}bg-secondary{% endif %}">
+                      {{ m.R2_Score }}
+                    </span>
+                  </td>
+                  <td class="font-monospace">₹ {{ "{:,}".format(m.RMSE|int) }}</td>
+                  <td class="font-monospace">₹ {{ "{:,}".format(m.MAE|int) }}</td>
+                  <td>{{ m.MAPE }}%</td>
+                  <td>{{ m.Train_R2 }}</td>
+                  <td>
+                    {% if name == meta.get('best_model_name') %}
+                      <span class="badge bg-warning text-dark border border-dark"><i class="fa-solid fa-crown me-1"></i> Best Model</span>
+                    {% else %}
+                      <span class="badge bg-light text-muted border">Evaluated</span>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 2: Global Feature Importance & SHAP Insights -->
+  <div class="row g-4 mb-4">
+    <!-- Chart -->
+    <div class="col-lg-7">
+      <div class="eq-card h-100">
+        <div class="eq-card-header navy">
+          <h5 class="fw-bold mb-0">
+            <i class="fa-solid fa-chart-simple text-warning me-2"></i>Global Feature Importance Weights
+          </h5>
+        </div>
+        <div class="eq-card-body">
+          <p class="small text-muted mb-3">Relative statistical contribution of features in determining property value across all Indian cities.</p>
+          <div style="height: 380px;">
+            <canvas id="globalImportanceChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Architectural Interpretability Principles -->
+    <div class="col-lg-5">
+      <div class="eq-card h-100">
+        <div class="eq-card-header navy">
+          <h5 class="fw-bold mb-0">
+            <i class="fa-solid fa-lightbulb text-warning me-2"></i>Key Econometric Drivers
+          </h5>
+        </div>
+        <div class="eq-card-body">
+          <div class="d-flex align-items-start mb-3">
+            <div class="stat-icon me-3 flex-shrink-0" style="width:38px; height:38px;"><i class="fa-solid fa-map-pin"></i></div>
+            <div>
+              <strong class="text-navy">1. Locality & Metropolitan Tier (35-40%)</strong>
+              <p class="small text-muted mb-0">Metropolitan tiers (e.g. South Mumbai, DLF Cyber City, Indiranagar) establish the base square foot multiplier, commanding up to 5x higher baseline than outer perimeters.</p>
+            </div>
+          </div>
+
+          <div class="d-flex align-items-start mb-3">
+            <div class="stat-icon me-3 flex-shrink-0" style="width:38px; height:38px;"><i class="fa-solid fa-ruler-combined"></i></div>
+            <div>
+              <strong class="text-navy">2. Built-up Carpet Area (30-35%)</strong>
+              <p class="small text-muted mb-0">Linear scale multiplier. Larger area properties exhibit non-linear compounding in luxury micro-markets.</p>
+            </div>
+          </div>
+
+          <div class="d-flex align-items-start mb-3">
+            <div class="stat-icon me-3 flex-shrink-0" style="width:38px; height:38px;"><i class="fa-solid fa-bed"></i></div>
+            <div>
+              <strong class="text-navy">3. Room Configuration & Baths (12-15%)</strong>
+              <p class="small text-muted mb-0">Number of bedrooms and attached ensuite baths represent functional liveability thresholds in urban nuclear families.</p>
+            </div>
+          </div>
+
+          <div class="d-flex align-items-start mb-3">
+            <div class="stat-icon me-3 flex-shrink-0" style="width:38px; height:38px;"><i class="fa-solid fa-hourglass-half"></i></div>
+            <div>
+              <strong class="text-navy">4. Age & Depreciation (-8 to -18%)</strong>
+              <p class="small text-muted mb-0">New construction (0-2 years) commands a novelty premium; older structures (>12 years) exhibit steady physical depreciation.</p>
+            </div>
+          </div>
+
+          <div class="d-flex align-items-start">
+            <div class="stat-icon me-3 flex-shrink-0" style="width:38px; height:38px;"><i class="fa-solid fa-swimming-pool"></i></div>
+            <div>
+              <strong class="text-navy">5. Amenities & High-Rise Floor (5-8%)</strong>
+              <p class="small text-muted mb-0">High-rise floor elevation, gym, swimming pool, and dedicated parking bays provide an incremental compounding bump.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  const meta = {{ meta|tojson }};
+  const topFeatures = meta.top_feature_importances ? meta.top_feature_importances.slice(0, 10) : [];
+  
+  const labels = topFeatures.map(f => {
+    return f.feature.replace('cat__', '').replace('city_', 'City: ').replace('area_name_', 'Locality: ').replace('_', ' ').toUpperCase();
+  });
+  const importances = topFeatures.map(f => f.importance);
+
+  new Chart(document.getElementById('globalImportanceChart').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Relative Importance Weight',
+        data: importances,
+        backgroundColor: '#0A192F',
+        borderColor: '#D4AF37',
+        borderWidth: 1.5,
+        borderRadius: 4
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        x: { title: { display: true, text: 'Importance Metric (Gain/Gini)' }, grid: { color: '#E2E8F0' } },
+        y: { grid: { display: false } }
+      }
+    }
+  });
+</script>
+{% endblock %}
