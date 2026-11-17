@@ -1,5 +1,19 @@
 # ESTATEIQ – AI-Powered House Price Prediction and Real Estate Analytics System for Indian Cities
 
+<div align="center">
+
+[![Live Dashboard](https://img.shields.io/badge/🚀_LAUNCH_LIVE_DASHBOARD-0A192F?style=for-the-badge&logo=googlechrome&logoColor=D4AF37)](https://rajalakshmi369-raj.github.io/estateiq/)
+[![Download ZIP](https://img.shields.io/badge/📦_DOWNLOAD_PROJECT_ZIP-1E3A8A?style=for-the-badge&logo=github&logoColor=white)](https://github.com/rajalakshmi369-raj/estateiq/archive/refs/heads/main.zip)
+[![Download PDF Report](https://img.shields.io/badge/📄_FINAL_REPORT_(PDF)-DC2626?style=for-the-badge&logo=adobeacrobatreader&logoColor=white)](https://github.com/rajalakshmi369-raj/estateiq/raw/main/docs/ESTATEIQ_Final_Project_Report.pdf)
+[![Download DOCX Report](https://img.shields.io/badge/📝_FINAL_REPORT_(DOCX)-2563EB?style=for-the-badge&logo=microsoftword&logoColor=white)](https://github.com/rajalakshmi369-raj/estateiq/raw/main/docs/ESTATEIQ_Final_Project_Report.docx)
+
+### 👉 **[https://rajalakshmi369-raj.github.io/estateiq/](https://rajalakshmi369-raj.github.io/estateiq/)** 👈
+*(Anyone can touch or click the link above on mobile or PC to immediately run the live interactive dashboard!)*
+
+</div>
+
+---
+
 **Enterprise Automated Valuation Models (AVM) & Spatial Analytics Platform**
 
 ---

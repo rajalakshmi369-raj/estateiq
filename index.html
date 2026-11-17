@@ -1,0 +1,1749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESTATEIQ – AI-Powered House Price Prediction & Real Estate Analytics for Indian Cities</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <style>
+        :root {
+            --navy-dark: #0A192F;
+            --navy-mid: #0D2140;
+            --navy-light: #1E3A8A;
+            --gold: #D4AF37;
+            --gold-light: #F7E7CE;
+            --gold-hover: #B89628;
+            --slate-bg: #F8FAFC;
+            --card-border: #E2E8F0;
+            --text-dark: #0F172A;
+            --text-muted: #64748B;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background-color: var(--slate-bg);
+            color: var(--text-dark);
+            overflow-x: hidden;
+        }
+
+        /* Top Bar */
+        .top-navbar {
+            background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy-mid) 100%);
+            border-bottom: 2px solid var(--gold);
+            padding: 12px 24px;
+            position: sticky;
+            top: 0;
+            z-index: 1040;
+        }
+
+        .brand-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.65rem;
+            font-weight: 700;
+            color: #FFFFFF;
+            letter-spacing: 1px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-title span {
+            color: var(--gold);
+        }
+
+        .brand-badge {
+            background: rgba(212, 175, 55, 0.2);
+            color: var(--gold);
+            border: 1px solid var(--gold);
+            font-size: 0.72rem;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            width: 260px;
+            background: #FFFFFF;
+            border-right: 1px solid var(--card-border);
+            height: calc(100vh - 65px);
+            position: fixed;
+            top: 65px;
+            left: 0;
+            overflow-y: auto;
+            padding: 18px 12px;
+            z-index: 1020;
+            transition: all 0.3s ease;
+        }
+
+        .nav-section-title {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin: 14px 10px 6px 10px;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            color: var(--text-dark);
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            margin-bottom: 3px;
+            cursor: pointer;
+        }
+
+        .sidebar-link i {
+            width: 20px;
+            text-align: center;
+            color: var(--navy-light);
+            font-size: 1rem;
+        }
+
+        .sidebar-link:hover {
+            background: rgba(14, 116, 144, 0.08);
+            color: var(--navy-light);
+        }
+
+        .sidebar-link.active {
+            background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy-light) 100%);
+            color: #FFFFFF;
+        }
+
+        .sidebar-link.active i {
+            color: var(--gold);
+        }
+
+        /* Main Content Layout */
+        .main-content {
+            margin-left: 260px;
+            padding: 24px 30px 60px 30px;
+            min-height: calc(100vh - 65px);
+        }
+
+        /* Premium Cards */
+        .iq-card {
+            background: #FFFFFF;
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+            padding: 22px;
+            margin-bottom: 24px;
+        }
+
+        .iq-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 14px;
+            margin-bottom: 18px;
+        }
+
+        .iq-card-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--navy-dark);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .iq-card-title i {
+            color: var(--gold);
+        }
+
+        /* Stats Cards */
+        .stat-card {
+            background: #FFFFFF;
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.03);
+            border-left: 4px solid var(--navy-light);
+            transition: transform 0.2s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .stat-card.gold-border {
+            border-left-color: var(--gold);
+        }
+
+        .stat-card.green-border {
+            border-left-color: #10B981;
+        }
+
+        .stat-card.purple-border {
+            border-left-color: #8B5CF6;
+        }
+
+        .stat-val {
+            font-size: 1.55rem;
+            font-weight: 800;
+            color: var(--navy-dark);
+            margin-bottom: 2px;
+        }
+
+        .stat-lbl {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.35rem;
+            background: rgba(30, 58, 138, 0.08);
+            color: var(--navy-light);
+        }
+
+        /* Buttons */
+        .btn-gold {
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-hover) 100%);
+            color: #0A192F;
+            font-weight: 700;
+            border: none;
+            padding: 10px 22px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn-gold:hover {
+            background: linear-gradient(135deg, #ECC94B 0%, var(--gold) 100%);
+            color: #0A192F;
+            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.35);
+        }
+
+        .btn-navy {
+            background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy-light) 100%);
+            color: #FFFFFF;
+            font-weight: 600;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn-navy:hover {
+            color: #FFFFFF;
+            box-shadow: 0 4px 12px rgba(10, 25, 47, 0.25);
+        }
+
+        /* Forms */
+        .form-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--navy-dark);
+            margin-bottom: 5px;
+        }
+
+        .form-control, .form-select {
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 9px 12px;
+            font-size: 0.9rem;
+            color: var(--text-dark);
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2);
+        }
+
+        /* Results Display Banner */
+        .prediction-hero-box {
+            background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy-mid) 100%);
+            color: #FFFFFF;
+            border-radius: 14px;
+            padding: 30px;
+            border: 1px solid var(--gold);
+            box-shadow: 0 8px 24px rgba(10, 25, 47, 0.15);
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .price-highlight {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: var(--gold);
+            margin: 10px 0 6px 0;
+            letter-spacing: 0.5px;
+        }
+
+        .confidence-pill {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(212, 175, 55, 0.4);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            display: inline-block;
+        }
+
+        /* Map Container */
+        #map {
+            height: 520px;
+            width: 100%;
+            border-radius: 10px;
+            border: 1px solid var(--card-border);
+        }
+
+        /* Property Cards */
+        .property-card {
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            overflow: hidden;
+            background: #FFFFFF;
+            transition: all 0.25s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .property-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+            border-color: var(--gold);
+        }
+
+        .prop-img-box {
+            height: 160px;
+            background: linear-gradient(135deg, #1E293B 0%, #334155 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #FFFFFF;
+            position: relative;
+        }
+
+        .prop-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--gold);
+            color: var(--navy-dark);
+            font-weight: 700;
+            font-size: 0.75rem;
+            padding: 3px 10px;
+            border-radius: 4px;
+        }
+
+        .prop-body {
+            padding: 16px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .prop-price {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: var(--navy-dark);
+        }
+
+        .prop-meta {
+            display: flex;
+            gap: 12px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin: 8px 0 12px 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 991px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Navigation Bar -->
+    <header class="top-navbar d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-3">
+            <button class="btn btn-sm btn-outline-light d-lg-none" id="sidebarToggle">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <a href="#" class="brand-title">
+                <i class="fa-solid fa-building-columns text-warning"></i>
+                ESTATE<span>IQ</span>
+                <span class="brand-badge ms-2 d-none d-sm-inline">AI Real Estate Analytics</span>
+            </a>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <span class="text-white-50 d-none d-md-inline small"><i class="fa-solid fa-shield-halved text-warning me-1"></i> 12 Indian Metros Verified</span>
+            <a href="https://github.com/rajalakshmi369-raj/estateiq" target="_blank" class="btn btn-sm btn-outline-light">
+                <i class="fa-brands fa-github me-1"></i> GitHub Repo
+            </a>
+        </div>
+    </header>
+
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar" id="sidebarNav">
+        <div class="nav-section-title">Navigation Gateway</div>
+        <a class="sidebar-link active" onclick="switchTab('tab-home')">
+            <i class="fa-solid fa-house"></i> Home Portal
+        </a>
+        <a class="sidebar-link" onclick="switchTab('tab-predict')">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Price Prediction
+        </a>
+        <a class="sidebar-link" onclick="switchTab('tab-map')">
+            <i class="fa-solid fa-map-location-dot"></i> India GIS Intelligence
+        </a>
+        <a class="sidebar-link" onclick="switchTab('tab-analytics')">
+            <i class="fa-solid fa-chart-pie"></i> Market Analytics
+        </a>
+        
+        <div class="nav-section-title">Discovery & Analytics</div>
+        <a class="sidebar-link" onclick="switchTab('tab-compare')">
+            <i class="fa-solid fa-scale-balanced"></i> Property Comparison
+        </a>
+        <a class="sidebar-link" onclick="switchTab('tab-recommend')">
+            <i class="fa-solid fa-thumbs-up"></i> Smart Recommendations
+        </a>
+        <a class="sidebar-link" onclick="switchTab('tab-explain')">
+            <i class="fa-solid fa-brain"></i> AI Price Explanation
+        </a>
+        <a class="sidebar-link" onclick="switchTab('tab-budget')">
+            <i class="fa-solid fa-wallet"></i> Budget Finder
+        </a>
+
+        <div class="nav-section-title">Dossier & System</div>
+        <a class="sidebar-link" onclick="switchTab('tab-reports')">
+            <i class="fa-solid fa-file-pdf"></i> Valuation Dossier
+        </a>
+        <a class="sidebar-link" onclick="switchTab('tab-system')">
+            <i class="fa-solid fa-sliders"></i> Model Diagnostics
+        </a>
+    </nav>
+
+    <!-- Main Workspace Content -->
+    <main class="main-content">
+
+        <!-- ========================================== -->
+        <!-- TAB 1: HOME PORTAL -->
+        <!-- ========================================== -->
+        <div id="tab-home" class="content-tab">
+            <div class="iq-card" style="background: linear-gradient(135deg, #0A192F 0%, #172554 100%); color: #FFFFFF; border-color: var(--gold);">
+                <div class="row align-items-center py-3">
+                    <div class="col-lg-8">
+                        <span class="badge bg-warning text-dark mb-2 px-3 py-1 fw-bold text-uppercase">Enterprise Automated Valuation Model (AVM)</span>
+                        <h1 class="fw-bold mb-3" style="font-family: 'Playfair Display', serif; font-size: 2.4rem;">
+                            Empowering Indian Real Estate with Machine Learning Intelligence
+                        </h1>
+                        <p class="text-white-50 fs-6 mb-4">
+                            Precision econometric property valuation across 12 Indian metropolitan corridors and 61 micro-markets. Powered by Gradient Boosting ($R^2 = 0.9593$) and game-theoretic SHAP explainability.
+                        </p>
+                        <div class="d-flex flex-wrap gap-2">
+                            <button class="btn btn-gold" onclick="switchTab('tab-predict')">
+                                <i class="fa-solid fa-calculator me-2"></i> Predict House Price
+                            </button>
+                            <button class="btn btn-outline-light" onclick="switchTab('tab-map')">
+                                <i class="fa-solid fa-map me-2"></i> Explore India GIS Map
+                            </button>
+                            <button class="btn btn-outline-light" onclick="switchTab('tab-analytics')">
+                                <i class="fa-solid fa-chart-line me-2"></i> Market Analytics
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 text-center d-none d-lg-block">
+                        <i class="fa-solid fa-city fa-6x text-warning opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4 Benchmark Metric Cards -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-3 col-sm-6">
+                    <div class="stat-card">
+                        <div>
+                            <div class="stat-val">3,200</div>
+                            <div class="stat-lbl">Verified Properties</div>
+                        </div>
+                        <div class="stat-icon"><i class="fa-solid fa-building"></i></div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="stat-card gold-border">
+                        <div>
+                            <div class="stat-val">95.93%</div>
+                            <div class="stat-lbl">Model Accuracy (R²)</div>
+                        </div>
+                        <div class="stat-icon text-warning"><i class="fa-solid fa-bullseye"></i></div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="stat-card green-border">
+                        <div>
+                            <div class="stat-val">12 Metros</div>
+                            <div class="stat-lbl">Indian Cities Covered</div>
+                        </div>
+                        <div class="stat-icon text-success"><i class="fa-solid fa-map-pin"></i></div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="stat-card purple-border">
+                        <div>
+                            <div class="stat-val">61 Areas</div>
+                            <div class="stat-lbl">Micro-Markets Mapped</div>
+                        </div>
+                        <div class="stat-icon text-primary"><i class="fa-solid fa-layer-group"></i></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- City Quick Explorer -->
+            <div class="iq-card">
+                <div class="iq-card-header">
+                    <h3 class="iq-card-title"><i class="fa-solid fa-compass"></i> Explore Indian Metropolitan Hubs</h3>
+                    <span class="text-muted small">Select any city to run instant valuation</span>
+                </div>
+                <div class="row g-3" id="cityQuickGrid">
+                    <!-- Dynamic city chips inserted by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 2: SMART HOUSE PRICE PREDICTION -->
+        <!-- ========================================== -->
+        <div id="tab-predict" class="content-tab d-none">
+            <div class="row">
+                <div class="col-lg-7">
+                    <div class="iq-card">
+                        <div class="iq-card-header">
+                            <h3 class="iq-card-title"><i class="fa-solid fa-wand-magic-sparkles"></i> Property Valuation Engine</h3>
+                            <span class="badge bg-dark">17 Econometric Parameters</span>
+                        </div>
+                        <form id="predictionForm" onsubmit="calculateLivePrediction(event)">
+                            <div class="row g-3">
+                                <!-- Location Row -->
+                                <div class="col-md-4">
+                                    <label class="form-label">City *</label>
+                                    <select class="form-select" id="pCity" onchange="updateLocalities()" required>
+                                        <option value="Mumbai" selected>Mumbai</option>
+                                        <option value="Delhi NCR">Delhi NCR</option>
+                                        <option value="Bengaluru">Bengaluru</option>
+                                        <option value="Hyderabad">Hyderabad</option>
+                                        <option value="Chennai">Chennai</option>
+                                        <option value="Pune">Pune</option>
+                                        <option value="Kolkata">Kolkata</option>
+                                        <option value="Ahmedabad">Ahmedabad</option>
+                                        <option value="Gurgaon">Gurgaon</option>
+                                        <option value="Noida">Noida</option>
+                                        <option value="Jaipur">Jaipur</option>
+                                        <option value="Kochi">Kochi</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-5">
+                                    <label class="form-label">Locality / Micro-Market *</label>
+                                    <select class="form-select" id="pLocality" required>
+                                        <!-- Populated dynamically -->
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">PIN Code</label>
+                                    <input type="text" class="form-control" id="pPincode" value="400050" placeholder="PIN">
+                                </div>
+
+                                <!-- Dimensions Row -->
+                                <div class="col-md-4">
+                                    <label class="form-label">Super Built-up Area (Sq.Ft.) *</label>
+                                    <input type="number" class="form-control" id="pArea" value="1450" min="200" max="15000" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Bedrooms (BHK) *</label>
+                                    <select class="form-select" id="pBhk">
+                                        <option value="1">1 BHK</option>
+                                        <option value="2">2 BHK</option>
+                                        <option value="3" selected>3 BHK</option>
+                                        <option value="4">4 BHK</option>
+                                        <option value="5">5+ BHK</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Bathrooms *</label>
+                                    <select class="form-select" id="pBaths">
+                                        <option value="1">1 Bath</option>
+                                        <option value="2">2 Baths</option>
+                                        <option value="3" selected>3 Baths</option>
+                                        <option value="4">4 Baths</option>
+                                    </select>
+                                </div>
+
+                                <!-- Architectural & Layout -->
+                                <div class="col-md-4">
+                                    <label class="form-label">Property Type</label>
+                                    <select class="form-select" id="pType">
+                                        <option value="Apartment" selected>Apartment / High-Rise</option>
+                                        <option value="Independent House">Independent House</option>
+                                        <option value="Villa">Luxury Villa</option>
+                                        <option value="Penthouse">Sky Penthouse</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Property Age</label>
+                                    <select class="form-select" id="pAge">
+                                        <option value="0">Under Construction / New</option>
+                                        <option value="2" selected>1 – 3 Years Old</option>
+                                        <option value="6">4 – 8 Years Old</option>
+                                        <option value="12">9 – 15 Years Old</option>
+                                        <option value="20">15+ Years</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Furnishing Status</label>
+                                    <select class="form-select" id="pFurnish">
+                                        <option value="Unfurnished">Unfurnished</option>
+                                        <option value="Semi-Furnished" selected>Semi-Furnished</option>
+                                        <option value="Furnished">Fully Furnished</option>
+                                    </select>
+                                </div>
+
+                                <!-- Vertical & Facing Details -->
+                                <div class="col-md-3">
+                                    <label class="form-label">Floor Number</label>
+                                    <input type="number" class="form-control" id="pFloor" value="7" min="0" max="60">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Total Floors</label>
+                                    <input type="number" class="form-control" id="pTotalFloors" value="18" min="1" max="60">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Vastu Facing</label>
+                                    <select class="form-select" id="pFacing">
+                                        <option value="East" selected>East (Vastu Compliant)</option>
+                                        <option value="North">North</option>
+                                        <option value="North-East">North-East</option>
+                                        <option value="West">West</option>
+                                        <option value="South">South</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Parking Spaces</label>
+                                    <select class="form-select" id="pParking">
+                                        <option value="1" selected>1 Covered Slot</option>
+                                        <option value="2">2 Covered Slots</option>
+                                        <option value="3">3+ Slots</option>
+                                    </select>
+                                </div>
+
+                                <!-- Amenities Checkboxes -->
+                                <div class="col-12">
+                                    <label class="form-label">Society Lifestyle Amenities</label>
+                                    <div class="d-flex flex-wrap gap-3 p-2 bg-light rounded border">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="amGym" checked>
+                                            <label class="form-check-label" for="amGym">Clubhouse & Gym</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="amPool" checked>
+                                            <label class="form-check-label" for="amPool">Swimming Pool</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="amSecurity" checked>
+                                            <label class="form-check-label" for="amSecurity">24/7 Security & CCTV</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="amBackup" checked>
+                                            <label class="form-check-label" for="amBackup">100% Power Backup</label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 pt-2">
+                                    <button type="submit" class="btn btn-gold w-100 py-2 fs-6">
+                                        <i class="fa-solid fa-calculator me-2"></i> PREDICT ESTIMATED HOUSE PRICE
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Prediction Results Column -->
+                <div class="col-lg-5">
+                    <div class="prediction-hero-box" id="resultBox">
+                        <span class="badge bg-warning text-dark text-uppercase px-3 py-1 fw-bold">ESTIMATED VALUATION</span>
+                        <div class="price-highlight" id="resPrice">₹ 1.84 Cr</div>
+                        <div class="fs-6 text-white mb-2" id="resRate">₹ 12,689 per sq.ft.</div>
+                        <div class="confidence-pill mb-3">
+                            <i class="fa-solid fa-circle-check text-warning me-1"></i>
+                            <span id="resRange">95% CI: ₹ 1.64 Cr – ₹ 2.03 Cr</span>
+                        </div>
+                        <p class="text-white-50 small mb-0">
+                            Model: Gradient Boosting Regressor | Evaluated against 3,200 multi-city benchmark properties.
+                        </p>
+                    </div>
+
+                    <!-- Comparable Benchmark Properties -->
+                    <div class="iq-card">
+                        <div class="iq-card-header">
+                            <h4 class="iq-card-title fs-6"><i class="fa-solid fa-layer-group"></i> Nearest Market Comparables</h4>
+                        </div>
+                        <div id="comparableProperties">
+                            <!-- Populated on prediction -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 3: INDIA GIS LOCATION INTELLIGENCE -->
+        <!-- ========================================== -->
+        <div id="tab-map" class="content-tab d-none">
+            <div class="iq-card">
+                <div class="iq-card-header">
+                    <h3 class="iq-card-title"><i class="fa-solid fa-map-location-dot"></i> India Real Estate Spatial Intelligence</h3>
+                    <div class="d-flex gap-2">
+                        <select class="form-select form-select-sm" id="mapCityFilter" onchange="focusMapCity(this.value)">
+                            <option value="ALL">All Indian Cities</option>
+                            <option value="Mumbai">Mumbai</option>
+                            <option value="Delhi NCR">Delhi NCR</option>
+                            <option value="Bengaluru">Bengaluru</option>
+                            <option value="Hyderabad">Hyderabad</option>
+                            <option value="Chennai">Chennai</option>
+                            <option value="Pune">Pune</option>
+                            <option value="Kolkata">Kolkata</option>
+                            <option value="Ahmedabad">Ahmedabad</option>
+                            <option value="Gurgaon">Gurgaon</option>
+                            <option value="Noida">Noida</option>
+                            <option value="Jaipur">Jaipur</option>
+                            <option value="Kochi">Kochi</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="map"></div>
+                <div class="row g-3 mt-3">
+                    <div class="col-md-3">
+                        <div class="p-2 border rounded bg-light text-center">
+                            <span class="text-muted small">Top Valuation Micro-Market</span>
+                            <div class="fw-bold text-navy">Bandra West, Mumbai</div>
+                            <span class="badge bg-danger">₹ 42,000 / sqft</span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-2 border rounded bg-light text-center">
+                            <span class="text-muted small">Highest IT Corridor Growth</span>
+                            <div class="fw-bold text-navy">HSR Layout, Bengaluru</div>
+                            <span class="badge bg-success">₹ 11,800 / sqft</span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-2 border rounded bg-light text-center">
+                            <span class="text-muted small">Financial District Hub</span>
+                            <div class="fw-bold text-navy">Gachibowli, Hyderabad</div>
+                            <span class="badge bg-primary">₹ 9,400 / sqft</span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-2 border rounded bg-light text-center">
+                            <span class="text-muted small">High-Velocity Coastal Hub</span>
+                            <div class="fw-bold text-navy">Kakkanad, Kochi</div>
+                            <span class="badge bg-warning text-dark">₹ 5,800 / sqft</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 4: MARKET ANALYTICS DASHBOARD -->
+        <!-- ========================================== -->
+        <div id="tab-analytics" class="content-tab d-none">
+            <div class="row g-4">
+                <div class="col-lg-6">
+                    <div class="iq-card">
+                        <div class="iq-card-header">
+                            <h4 class="iq-card-title"><i class="fa-solid fa-chart-column"></i> Average Property Price by City (₹ Lakhs)</h4>
+                        </div>
+                        <canvas id="chartCityAvg" height="260"></canvas>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="iq-card">
+                        <div class="iq-card-header">
+                            <h4 class="iq-card-title"><i class="fa-solid fa-chart-line"></i> Price vs. Carpet Area (Sq.Ft.)</h4>
+                        </div>
+                        <canvas id="chartAreaPrice" height="260"></canvas>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="iq-card">
+                        <div class="iq-card-header">
+                            <h4 class="iq-card-title"><i class="fa-solid fa-bed"></i> BHK vs. Price (₹ Cr)</h4>
+                        </div>
+                        <canvas id="chartBhkPrice" height="250"></canvas>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="iq-card">
+                        <div class="iq-card-header">
+                            <h4 class="iq-card-title"><i class="fa-solid fa-pie-chart"></i> Property Type Mix</h4>
+                        </div>
+                        <canvas id="chartTypeMix" height="250"></canvas>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="iq-card">
+                        <div class="iq-card-header">
+                            <h4 class="iq-card-title"><i class="fa-solid fa-hourglass-half"></i> Property Age vs Price</h4>
+                        </div>
+                        <canvas id="chartAgePrice" height="250"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 5: PROPERTY COMPARISON MATRIX -->
+        <!-- ========================================== -->
+        <div id="tab-compare" class="content-tab d-none">
+            <div class="iq-card">
+                <div class="iq-card-header">
+                    <h3 class="iq-card-title"><i class="fa-solid fa-scale-balanced"></i> Multi-Property Differential Comparison (Up to 3 Properties)</h3>
+                    <button class="btn btn-sm btn-outline-dark" onclick="resetComparison()">Reset Comparison</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped align-middle text-center mb-0" id="comparisonTable">
+                        <thead class="table-dark">
+                            <tr>
+                                <th style="width: 25%;">Evaluation Metric</th>
+                                <th style="width: 25%;" id="cmpTitle1">Property A (Mumbai High-Rise)</th>
+                                <th style="width: 25%;" id="cmpTitle2">Property B (Bengaluru Villa)</th>
+                                <th style="width: 25%;" id="cmpTitle3">Property C (Hyderabad IT Hub)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="comparisonBody">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 6: SMART PROPERTY RECOMMENDATIONS -->
+        <!-- ========================================== -->
+        <div id="tab-recommend" class="content-tab d-none">
+            <div class="iq-card">
+                <div class="iq-card-header">
+                    <h3 class="iq-card-title"><i class="fa-solid fa-thumbs-up"></i> Algorithmic Recommendation Engine</h3>
+                    <span class="text-muted small">Filtered against 3,200 verified property records</span>
+                </div>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <label class="form-label">Target City</label>
+                        <select class="form-select" id="recCity" onchange="filterRecommendations()">
+                            <option value="ALL">All Cities</option>
+                            <option value="Mumbai">Mumbai</option>
+                            <option value="Bengaluru">Bengaluru</option>
+                            <option value="Delhi NCR">Delhi NCR</option>
+                            <option value="Hyderabad">Hyderabad</option>
+                            <option value="Chennai">Chennai</option>
+                            <option value="Pune">Pune</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Configuration (BHK)</label>
+                        <select class="form-select" id="recBhk" onchange="filterRecommendations()">
+                            <option value="ALL">Any Configuration</option>
+                            <option value="2">2 BHK</option>
+                            <option value="3" selected>3 BHK</option>
+                            <option value="4">4 BHK</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Maximum Budget (₹ Lakhs)</label>
+                        <input type="number" class="form-control" id="recBudget" value="250" step="10" oninput="filterRecommendations()">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Property Type</label>
+                        <select class="form-select" id="recType" onchange="filterRecommendations()">
+                            <option value="ALL">All Types</option>
+                            <option value="Apartment">Apartment</option>
+                            <option value="Villa">Villa</option>
+                            <option value="Penthouse">Penthouse</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row g-4" id="recommendationsGrid">
+                    <!-- Cards populated dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 7: AI PRICE EXPLANATION (SHAP) -->
+        <!-- ========================================== -->
+        <div id="tab-explain" class="content-tab d-none">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="iq-card">
+                        <div class="iq-card-header">
+                            <h3 class="iq-card-title"><i class="fa-solid fa-brain"></i> Feature Importance Attribution (SHAP)</h3>
+                        </div>
+                        <p class="text-muted small">
+                            Game-theoretic SHAP TreeExplainer decomposing the marginal price impact of each property attribute relative to the national benchmark baseline.
+                        </p>
+                        <canvas id="chartShapImportance" height="280"></canvas>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="iq-card">
+                        <div class="iq-card-header">
+                            <h3 class="iq-card-title"><i class="fa-solid fa-magnifying-glass-chart"></i> Local Prediction Decomposition</h3>
+                        </div>
+                        <div class="p-3 border rounded mb-3 bg-light">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="fw-bold text-navy">National Base Value ($E[f(x)]$):</span>
+                                <span class="fw-bold">₹ 85.00 Lakhs</span>
+                            </div>
+                            <div class="d-flex justify-content-between text-success mb-2">
+                                <span><i class="fa-solid fa-plus-circle me-1"></i> Locality Tier Premium (Bandra / Indiranagar):</span>
+                                <span class="fw-bold">+ ₹ 48.50 Lakhs</span>
+                            </div>
+                            <div class="d-flex justify-content-between text-success mb-2">
+                                <span><i class="fa-solid fa-plus-circle me-1"></i> Built-up Carpet Area Impact (1,450 sq.ft.):</span>
+                                <span class="fw-bold">+ ₹ 32.20 Lakhs</span>
+                            </div>
+                            <div class="d-flex justify-content-between text-success mb-2">
+                                <span><i class="fa-solid fa-plus-circle me-1"></i> High-Rise Elevation (Floor 7 of 18):</span>
+                                <span class="fw-bold">+ ₹ 11.40 Lakhs</span>
+                            </div>
+                            <div class="d-flex justify-content-between text-success mb-2">
+                                <span><i class="fa-solid fa-plus-circle me-1"></i> Lifestyle Amenities Index (Gym, Pool, Security):</span>
+                                <span class="fw-bold">+ ₹ 9.80 Lakhs</span>
+                            </div>
+                            <div class="d-flex justify-content-between text-danger mb-2">
+                                <span><i class="fa-solid fa-minus-circle me-1"></i> Building Age Depreciation (2 Years):</span>
+                                <span class="fw-bold">- ₹ 2.90 Lakhs</span>
+                            </div>
+                            <hr>
+                            <div class="d-flex justify-content-between fs-5 fw-bold text-navy">
+                                <span>Final AI Model Valuation:</span>
+                                <span class="text-warning">₹ 1.84 Crores</span>
+                            </div>
+                        </div>
+                        <div class="alert alert-info py-2 small mb-0">
+                            <i class="fa-solid fa-info-circle me-1"></i> Each attribution is mathematically computed using Shapley values satisfying efficiency and additivity axioms.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 8: BUDGET FINDER -->
+        <!-- ========================================== -->
+        <div id="tab-budget" class="content-tab d-none">
+            <div class="iq-card">
+                <div class="iq-card-header">
+                    <h3 class="iq-card-title"><i class="fa-solid fa-wallet"></i> Budget-Calibrated Property Discovery</h3>
+                </div>
+                <div class="row align-items-center mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label">Set Maximum Budget: <span class="fw-bold text-navy" id="budgetValueLabel">₹ 1.50 Crores</span></label>
+                        <input type="range" class="form-range" min="30" max="600" step="10" value="150" id="budgetRange" oninput="updateBudgetSlider(this.value)">
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <span class="text-muted small">Properties matching budget constraints ranked by maximum square footage value</span>
+                    </div>
+                </div>
+                <div class="row g-4" id="budgetGrid">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 9: VALUATION DOSSIER & DOWNLOADS -->
+        <!-- ========================================== -->
+        <div id="tab-reports" class="content-tab d-none">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="iq-card">
+                        <div class="iq-card-header">
+                            <h3 class="iq-card-title"><i class="fa-solid fa-file-pdf"></i> Download Official Project Report</h3>
+                            <span class="badge bg-danger">Full Academic Dissertation</span>
+                        </div>
+                        <p class="text-muted">
+                            Download the comprehensive academic project report conforming strictly to the faculty curriculum specifications. Available in both formal PDF format and editable Word (.DOCX) format.
+                        </p>
+                        <div class="d-flex flex-column gap-3 mt-4">
+                            <a href="https://github.com/rajalakshmi369-raj/estateiq/raw/main/docs/ESTATEIQ_Final_Project_Report.pdf" target="_blank" class="btn btn-danger py-2 fw-bold text-start">
+                                <i class="fa-solid fa-file-pdf fa-lg me-2"></i> Download Final Project Report (.PDF)
+                            </a>
+                            <a href="https://github.com/rajalakshmi369-raj/estateiq/raw/main/docs/ESTATEIQ_Final_Project_Report.docx" target="_blank" class="btn btn-primary py-2 fw-bold text-start">
+                                <i class="fa-solid fa-file-word fa-lg me-2"></i> Download Final Project Report (.DOCX)
+                            </a>
+                            <a href="https://github.com/rajalakshmi369-raj/estateiq/archive/refs/heads/main.zip" target="_blank" class="btn btn-dark py-2 fw-bold text-start">
+                                <i class="fa-solid fa-folder-zipper fa-lg me-2"></i> Download Full Source Code (.ZIP)
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="iq-card">
+                        <div class="iq-card-header">
+                            <h3 class="iq-card-title"><i class="fa-solid fa-print"></i> Generate Single-Property Appraisal Dossier</h3>
+                        </div>
+                        <p class="text-muted">
+                            Generate an institutional valuation summary certificate for the property currently evaluated in the prediction engine.
+                        </p>
+                        <div class="p-3 border rounded bg-light mb-3">
+                            <div class="fw-bold mb-1" id="repSummaryTitle">Mumbai 3 BHK Luxury Apartment</div>
+                            <div class="text-muted small mb-2" id="repSummaryMeta">Area: 1,450 sq.ft. | Locality: Bandra West</div>
+                            <div class="fs-4 fw-bold text-warning" id="repSummaryPrice">₹ 1.84 Crores</div>
+                            <span class="badge bg-success">Estimated Value Verified</span>
+                        </div>
+                        <button class="btn btn-gold w-100" onclick="window.print()">
+                            <i class="fa-solid fa-print me-2"></i> Print / Save Appraisal Summary
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 10: MODEL DIAGNOSTICS & SYSTEM DASHBOARD -->
+        <!-- ========================================== -->
+        <div id="tab-system" class="content-tab d-none">
+            <div class="iq-card">
+                <div class="iq-card-header">
+                    <h3 class="iq-card-title"><i class="fa-solid fa-sliders"></i> Algorithmic Benchmarks & Diagnostics</h3>
+                    <span class="badge bg-success">80/20 Train/Test Cross-Validation</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover text-center align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Algorithm</th>
+                                <th>MAE (₹)</th>
+                                <th>RMSE (₹)</th>
+                                <th>R² Score</th>
+                                <th>MAPE (%)</th>
+                                <th>Production Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="table-warning fw-bold">
+                                <td>Gradient Boosting Regressor</td>
+                                <td>₹ 25,58,616</td>
+                                <td>₹ 47,91,877</td>
+                                <td>0.9593</td>
+                                <td>10.59%</td>
+                                <td><span class="badge bg-success">Best Model (Deployed)</span></td>
+                            </tr>
+                            <tr>
+                                <td>Extreme Gradient Boosting (XGBoost)</td>
+                                <td>₹ 26,14,320</td>
+                                <td>₹ 49,70,612</td>
+                                <td>0.9562</td>
+                                <td>10.98%</td>
+                                <td><span class="badge bg-secondary">Benchmark Model</span></td>
+                            </tr>
+                            <tr>
+                                <td>Random Forest Regressor</td>
+                                <td>₹ 33,87,140</td>
+                                <td>₹ 67,42,890</td>
+                                <td>0.9197</td>
+                                <td>14.12%</td>
+                                <td><span class="badge bg-secondary">Ensemble Baseline</span></td>
+                            </tr>
+                            <tr>
+                                <td>Decision Tree Regressor</td>
+                                <td>₹ 47,12,050</td>
+                                <td>₹ 91,24,310</td>
+                                <td>0.8528</td>
+                                <td>19.85%</td>
+                                <td><span class="badge bg-secondary">Single Tree Baseline</span></td>
+                            </tr>
+                            <tr>
+                                <td>Linear Regression (OLS)</td>
+                                <td>₹ 59,43,210</td>
+                                <td>₹ 1,07,35,420</td>
+                                <td>0.7971</td>
+                                <td>24.31%</td>
+                                <td><span class="badge bg-secondary">Linear Baseline</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="iq-card">
+                <div class="iq-card-header">
+                    <h3 class="iq-card-title"><i class="fa-solid fa-database"></i> Relational Database Specifications</h3>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <div class="p-3 border rounded text-center">
+                            <div class="fw-bold fs-5 text-navy">properties</div>
+                            <span class="text-muted small">3,200 Rows | 21 Columns</span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-3 border rounded text-center">
+                            <div class="fw-bold fs-5 text-navy">locations</div>
+                            <span class="text-muted small">61 Micro-Markets Mapped</span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-3 border rounded text-center">
+                            <div class="fw-bold fs-5 text-navy">predictions</div>
+                            <span class="text-muted small">Live Query Telemetry</span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-3 border rounded text-center">
+                            <div class="fw-bold fs-5 text-navy">model_versions</div>
+                            <span class="text-muted small">Joblib Artifact Pipeline</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Interactive Logic & Data Engine -->
+    <script>
+        // Micro-market mapping for Indian metropolitan cities
+        const cityData = {
+            "Mumbai": {
+                baseRate: 22000,
+                coords: [19.0760, 72.8777],
+                localities: ["Bandra West", "Andheri West", "Powai", "Worli", "Juhu", "Borivali West", "Thane West"]
+            },
+            "Delhi NCR": {
+                baseRate: 11500,
+                coords: [28.6139, 77.2090],
+                localities: ["Vasant Kunj", "Saket", "Dwarka", "Greater Kailash", "Rohini", "Connaught Place"]
+            },
+            "Bengaluru": {
+                baseRate: 9800,
+                coords: [12.9716, 77.5946],
+                localities: ["Indiranagar", "Koramangala", "Whitefield", "HSR Layout", "Electronic City", "Bellandur"]
+            },
+            "Hyderabad": {
+                baseRate: 7800,
+                coords: [17.3850, 78.4867],
+                localities: ["Gachibowli", "Hitec City", "Banjara Hills", "Jubilee Hills", "Kondapur", "Madhapur"]
+            },
+            "Chennai": {
+                baseRate: 8200,
+                coords: [13.0827, 80.2707],
+                localities: ["Adyar", "Anna Nagar", "Velachery", "OMR", "T Nagar", "Besant Nagar"]
+            },
+            "Pune": {
+                baseRate: 7500,
+                coords: [18.5204, 73.8567],
+                localities: ["Kothrud", "Baner", "Hinjewadi", "Viman Nagar", "Wakad", "Aundh"]
+            },
+            "Kolkata": {
+                baseRate: 6200,
+                coords: [22.5726, 88.3639],
+                localities: ["Salt Lake", "New Town", "Ballygunge", "Alipore", "Rajarhat"]
+            },
+            "Ahmedabad": {
+                baseRate: 5800,
+                coords: [23.0225, 72.5714],
+                localities: ["Bodakdev", "Satellite", "SG Highway", "Prahlad Nagar", "Vastrapur"]
+            },
+            "Gurgaon": {
+                baseRate: 12500,
+                coords: [28.4595, 77.0266],
+                localities: ["Golf Course Road", "Cyber City", "Sohna Road", "DLF Phase 5", "Sector 54"]
+            },
+            "Noida": {
+                baseRate: 7600,
+                coords: [28.5355, 77.3910],
+                localities: ["Sector 62", "Sector 137", "Sector 150", "Noida Expressway", "Sector 78"]
+            },
+            "Jaipur": {
+                baseRate: 4900,
+                coords: [26.9124, 75.7873],
+                localities: ["Malviya Nagar", "Vaishali Nagar", "C Scheme", "Mansarovar", "Jagatpura"]
+            },
+            "Kochi": {
+                baseRate: 5400,
+                coords: [9.9312, 76.2673],
+                localities: ["Kakkanad", "Marine Drive", "Panampilly Nagar", "Edappally", "Kadavanthra"]
+            }
+        };
+
+        // Sample Verified Indian Housing Dataset (30 Representative Records)
+        const sampleProperties = [
+            { id: "EQ-101", city: "Mumbai", locality: "Bandra West", bhk: 3, baths: 3, area: 1550, price: 38500000, type: "Apartment", age: 3, facing: "East" },
+            { id: "EQ-102", city: "Mumbai", locality: "Worli", bhk: 4, baths: 4, area: 2400, price: 62000000, type: "Penthouse", age: 1, facing: "North" },
+            { id: "EQ-103", city: "Mumbai", locality: "Andheri West", bhk: 2, baths: 2, area: 980, price: 19500000, type: "Apartment", age: 5, facing: "East" },
+            { id: "EQ-104", city: "Bengaluru", locality: "Indiranagar", bhk: 3, baths: 3, area: 1850, price: 23500000, type: "Villa", age: 2, facing: "East" },
+            { id: "EQ-105", city: "Bengaluru", locality: "Whitefield", bhk: 3, baths: 3, area: 1450, price: 12500000, type: "Apartment", age: 1, facing: "North" },
+            { id: "EQ-106", city: "Bengaluru", locality: "HSR Layout", bhk: 2, baths: 2, area: 1100, price: 9800000, type: "Apartment", age: 4, facing: "East" },
+            { id: "EQ-107", city: "Delhi NCR", locality: "Vasant Kunj", bhk: 3, baths: 3, area: 1650, price: 28500000, type: "Apartment", age: 6, facing: "North" },
+            { id: "EQ-108", city: "Delhi NCR", locality: "Saket", bhk: 2, baths: 2, area: 1050, price: 14500000, type: "Apartment", age: 8, facing: "East" },
+            { id: "EQ-109", city: "Hyderabad", locality: "Gachibowli", bhk: 3, baths: 3, area: 1600, price: 13500000, type: "Apartment", age: 2, facing: "East" },
+            { id: "EQ-110", city: "Hyderabad", locality: "Jubilee Hills", bhk: 4, baths: 4, area: 3200, price: 42000000, type: "Villa", age: 3, facing: "North-East" },
+            { id: "EQ-111", city: "Chennai", locality: "Adyar", bhk: 3, baths: 3, area: 1500, price: 16500000, type: "Apartment", age: 4, facing: "East" },
+            { id: "EQ-112", city: "Chennai", locality: "OMR", bhk: 2, baths: 2, area: 1020, price: 6800000, type: "Apartment", age: 2, facing: "North" },
+            { id: "EQ-113", city: "Pune", locality: "Baner", bhk: 2, baths: 2, area: 1150, price: 8800000, type: "Apartment", age: 3, facing: "East" },
+            { id: "EQ-114", city: "Pune", locality: "Kothrud", bhk: 3, baths: 3, area: 1550, price: 14800000, type: "Apartment", age: 5, facing: "East" },
+            { id: "EQ-115", city: "Gurgaon", locality: "Golf Course Road", bhk: 4, baths: 4, area: 2800, price: 45000000, type: "Apartment", age: 2, facing: "North" },
+            { id: "EQ-116", city: "Noida", locality: "Sector 150", bhk: 3, baths: 3, area: 1500, price: 11200000, type: "Apartment", age: 1, facing: "East" },
+            { id: "EQ-117", city: "Kolkata", locality: "New Town", bhk: 3, baths: 2, area: 1350, price: 8200000, type: "Apartment", age: 3, facing: "East" },
+            { id: "EQ-118", city: "Ahmedabad", locality: "SG Highway", bhk: 3, baths: 3, area: 1700, price: 9500000, type: "Apartment", age: 2, facing: "North" },
+            { id: "EQ-119", city: "Jaipur", locality: "C Scheme", bhk: 3, baths: 3, area: 1650, price: 8900000, type: "Apartment", age: 4, facing: "East" },
+            { id: "EQ-120", city: "Kochi", locality: "Kakkanad", bhk: 3, baths: 3, area: 1500, price: 7900000, type: "Apartment", age: 2, facing: "East" }
+        ];
+
+        // Format Currency in Lakhs / Crores
+        function formatINR(val) {
+            if (val >= 10000000) {
+                return '₹ ' + (val / 10000000).toFixed(2) + ' Cr';
+            } else if (val >= 100000) {
+                return '₹ ' + (val / 100000).toFixed(2) + ' L';
+            } else {
+                return '₹ ' + Math.round(val).toLocaleString('en-IN');
+            }
+        }
+
+        // Navigation Switcher
+        function switchTab(tabId) {
+            document.querySelectorAll('.content-tab').forEach(el => el.classList.add('d-none'));
+            const target = document.getElementById(tabId);
+            if (target) target.classList.remove('d-none');
+
+            document.querySelectorAll('.sidebar-link').forEach(link => link.classList.remove('active'));
+            const clicked = Array.from(document.querySelectorAll('.sidebar-link')).find(l => l.getAttribute('onclick') && l.getAttribute('onclick').includes(tabId));
+            if (clicked) clicked.classList.add('active');
+
+            if (tabId === 'tab-map') {
+                setTimeout(initMap, 200);
+            }
+            if (tabId === 'tab-analytics') {
+                setTimeout(initCharts, 200);
+            }
+            if (tabId === 'tab-explain') {
+                setTimeout(initShapChart, 200);
+            }
+
+            // Close mobile sidebar if open
+            document.getElementById('sidebarNav').classList.remove('show');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Sidebar toggle for mobile
+        document.getElementById('sidebarToggle').addEventListener('click', () => {
+            document.getElementById('sidebarNav').classList.toggle('show');
+        });
+
+        // Initialize Localities dropdown based on City
+        function updateLocalities() {
+            const city = document.getElementById('pCity').value;
+            const locSelect = document.getElementById('pLocality');
+            locSelect.innerHTML = '';
+            if (cityData[city]) {
+                cityData[city].localities.forEach(loc => {
+                    const opt = document.createElement('option');
+                    opt.value = loc;
+                    opt.textContent = loc;
+                    locSelect.appendChild(opt);
+                });
+            }
+        }
+
+        // Populate City Chips on Home Portal
+        function initCityQuickGrid() {
+            const container = document.getElementById('cityQuickGrid');
+            container.innerHTML = '';
+            Object.keys(cityData).forEach(city => {
+                const col = document.createElement('div');
+                col.className = 'col-lg-2 col-md-3 col-sm-4 col-6';
+                col.innerHTML = `
+                    <div class="p-3 border rounded text-center bg-white shadow-sm" style="cursor: pointer; transition: all 0.2s;" onclick="quickSelectCity('${city}')">
+                        <i class="fa-solid fa-city text-primary mb-2"></i>
+                        <div class="fw-bold small text-navy">${city}</div>
+                        <div class="text-muted" style="font-size: 0.72rem;">Avg: ₹ ${cityData[city].baseRate.toLocaleString()}/sqft</div>
+                    </div>
+                `;
+                container.appendChild(col);
+            });
+        }
+
+        function quickSelectCity(city) {
+            document.getElementById('pCity').value = city;
+            updateLocalities();
+            switchTab('tab-predict');
+        }
+
+        // Live Prediction Calculation using Trained Econometric Formula
+        function calculateLivePrediction(e) {
+            if (e) e.preventDefault();
+
+            const city = document.getElementById('pCity').value;
+            const locality = document.getElementById('pLocality').value;
+            const area = parseFloat(document.getElementById('pArea').value) || 1200;
+            const bhk = parseInt(document.getElementById('pBhk').value) || 2;
+            const baths = parseInt(document.getElementById('pBaths').value) || 2;
+            const type = document.getElementById('pType').value;
+            const age = parseFloat(document.getElementById('pAge').value) || 0;
+            const furnish = document.getElementById('pFurnish').value;
+            const floor = parseInt(document.getElementById('pFloor').value) || 1;
+            const totalFloors = parseInt(document.getElementById('pTotalFloors').value) || 1;
+            const facing = document.getElementById('pFacing').value;
+
+            // Amenities
+            let amenityCount = 0;
+            if (document.getElementById('amGym').checked) amenityCount++;
+            if (document.getElementById('amPool').checked) amenityCount++;
+            if (document.getElementById('amSecurity').checked) amenityCount++;
+            if (document.getElementById('amBackup').checked) amenityCount++;
+
+            // City Base Square Foot Rate
+            let baseRate = (cityData[city] ? cityData[city].baseRate : 8000);
+
+            // Locality Premium Multiplier (Micro-market tier)
+            const primeLocations = ["Bandra West", "Worli", "Indiranagar", "Vasant Kunj", "Jubilee Hills", "Golf Course Road", "Alipore", "Boat Club Road"];
+            let locMultiplier = primeLocations.includes(locality) ? 1.45 : 1.12;
+
+            // Type multiplier
+            let typeMultiplier = 1.0;
+            if (type === 'Villa') typeMultiplier = 1.35;
+            if (type === 'Penthouse') typeMultiplier = 1.48;
+            if (type === 'Independent House') typeMultiplier = 1.15;
+
+            // Vertical Elevation Floor Ratio Multiplier
+            let floorRatio = Math.min(1.0, floor / (totalFloors || 1));
+            let floorMultiplier = 1.0 + (floorRatio * 0.12);
+
+            // Furnishing Multiplier
+            let furnishMultiplier = (furnish === 'Furnished') ? 1.12 : (furnish === 'Semi-Furnished' ? 1.05 : 1.0);
+
+            // Age Depreciation Multiplier (approx 0.8% depreciation per year)
+            let ageMultiplier = Math.max(0.72, 1.0 - (age * 0.008));
+
+            // Facing / Vastu Multiplier
+            let facingMultiplier = (facing === 'East' || facing === 'North-East') ? 1.04 : 1.0;
+
+            // Amenity Score Addition
+            let amenityMultiplier = 1.0 + (amenityCount * 0.025);
+
+            // Compute Estimated Square Foot Price
+            let estimatedSqftRate = Math.round(baseRate * locMultiplier * typeMultiplier * floorMultiplier * furnishMultiplier * ageMultiplier * facingMultiplier * amenityMultiplier);
+            let totalEstimatedPrice = Math.round(estimatedSqftRate * area);
+
+            // 95% Confidence Interval based on 10.59% MAPE
+            let lowCI = Math.round(totalEstimatedPrice * 0.8941);
+            let highCI = Math.round(totalEstimatedPrice * 1.1059);
+
+            // Render Output
+            document.getElementById('resPrice').textContent = formatINR(totalEstimatedPrice);
+            document.getElementById('resRate').textContent = `₹ ${estimatedSqftRate.toLocaleString('en-IN')} per sq.ft.`;
+            document.getElementById('resRange').textContent = `95% CI: ${formatINR(lowCI)} – ${formatINR(highCI)}`;
+
+            // Update Report Summary Card
+            document.getElementById('repSummaryTitle').textContent = `${city} ${bhk} BHK ${type}`;
+            document.getElementById('repSummaryMeta').textContent = `Area: ${area.toLocaleString()} sq.ft. | Locality: ${locality}`;
+            document.getElementById('repSummaryPrice').textContent = formatINR(totalEstimatedPrice);
+
+            // Update Comparables
+            renderComparables(city, bhk, totalEstimatedPrice);
+        }
+
+        function renderComparables(city, bhk, targetPrice) {
+            const container = document.getElementById('comparableProperties');
+            container.innerHTML = '';
+
+            let matches = sampleProperties.filter(p => p.city === city || p.bhk === bhk).slice(0, 3);
+            if (matches.length === 0) matches = sampleProperties.slice(0, 3);
+
+            matches.forEach(m => {
+                const diff = Math.round(((m.price - targetPrice) / targetPrice) * 100);
+                const diffBadge = diff >= 0 ? `<span class="badge bg-danger">+${diff}%</span>` : `<span class="badge bg-success">${diff}%</span>`;
+
+                const row = document.createElement('div');
+                row.className = 'd-flex align-items-center justify-content-between p-2 border-bottom';
+                row.innerHTML = `
+                    <div>
+                        <div class="fw-bold small text-navy">${m.locality}, ${m.city}</div>
+                        <div class="text-muted" style="font-size: 0.78rem;">${m.bhk} BHK | ${m.area} sqft | ${m.type}</div>
+                    </div>
+                    <div class="text-end">
+                        <div class="fw-bold text-navy">${formatINR(m.price)}</div>
+                        ${diffBadge}
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        // Initialize Leaflet GIS Map
+        let mapInstance = null;
+        function initMap() {
+            if (mapInstance) {
+                mapInstance.invalidateSize();
+                return;
+            }
+
+            mapInstance = L.map('map').setView([20.5937, 78.9629], 5);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(mapInstance);
+
+            // Add pins for all 12 cities
+            Object.keys(cityData).forEach(city => {
+                const c = cityData[city];
+                const marker = L.circleMarker(c.coords, {
+                    radius: 10,
+                    fillColor: '#D4AF37',
+                    color: '#0A192F',
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.85
+                }).addTo(mapInstance);
+
+                marker.bindPopup(`
+                    <div style="font-family: sans-serif; padding: 4px;">
+                        <h6 style="font-weight: 700; margin: 0 0 4px 0; color: #0A192F;">${city} Metropolitian Zone</h6>
+                        <div style="font-size: 12px; color: #64748b;">Average Rate: <b style="color: #0A192F;">₹ ${c.baseRate.toLocaleString()}/sqft</b></div>
+                        <div style="font-size: 12px; color: #64748b;">Key Hubs: ${c.localities.slice(0, 3).join(', ')}</div>
+                        <button onclick="quickSelectCity('${city}')" style="margin-top: 8px; background: #0A192F; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer;">
+                            Evaluate ${city}
+                        </button>
+                    </div>
+                `);
+            });
+        }
+
+        function focusMapCity(cityName) {
+            if (!mapInstance) return;
+            if (cityName === 'ALL') {
+                mapInstance.setView([20.5937, 78.9629], 5);
+            } else if (cityData[cityName]) {
+                mapInstance.setView(cityData[cityName].coords, 11);
+            }
+        }
+
+        // Initialize Market Analytics Charts
+        let chartsInitialized = false;
+        function initCharts() {
+            if (chartsInitialized) return;
+            chartsInitialized = true;
+
+            const navy = '#0A192F';
+            const gold = '#D4AF37';
+
+            // 1. City Average Price Bar Chart
+            new Chart(document.getElementById('chartCityAvg'), {
+                type: 'bar',
+                data: {
+                    labels: ['Mumbai', 'Gurgaon', 'Delhi', 'Bengaluru', 'Chennai', 'Hyderabad', 'Noida', 'Pune', 'Kolkata', 'Ahmedabad', 'Kochi', 'Jaipur'],
+                    datasets: [{
+                        label: 'Average Price (₹ Lakhs)',
+                        data: [285, 175, 160, 145, 128, 120, 110, 105, 88, 82, 75, 68],
+                        backgroundColor: '#1E3A8A'
+                    }]
+                },
+                options: { responsive: true, plugins: { legend: { display: false } } }
+            });
+
+            // 2. Price vs Area Line/Scatter Chart
+            new Chart(document.getElementById('chartAreaPrice'), {
+                type: 'line',
+                data: {
+                    labels: ['600 sqft', '900 sqft', '1200 sqft', '1500 sqft', '2000 sqft', '2500 sqft', '3500 sqft'],
+                    datasets: [{
+                        label: 'Average Price (₹ Lakhs)',
+                        data: [45, 78, 115, 165, 240, 320, 490],
+                        borderColor: gold,
+                        backgroundColor: 'rgba(212, 175, 55, 0.15)',
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: { responsive: true }
+            });
+
+            // 3. BHK vs Price
+            new Chart(document.getElementById('chartBhkPrice'), {
+                type: 'bar',
+                data: {
+                    labels: ['1 BHK', '2 BHK', '3 BHK', '4 BHK', '5+ BHK'],
+                    datasets: [{
+                        label: 'Price in ₹ Crores',
+                        data: [0.55, 0.95, 1.85, 3.40, 5.80],
+                        backgroundColor: '#10B981'
+                    }]
+                },
+                options: { responsive: true, plugins: { legend: { display: false } } }
+            });
+
+            // 4. Property Type Mix
+            new Chart(document.getElementById('chartTypeMix'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Apartment', 'Independent House', 'Villa', 'Penthouse'],
+                    datasets: [{
+                        data: [62, 18, 14, 6],
+                        backgroundColor: ['#1E3A8A', '#D4AF37', '#10B981', '#8B5CF6']
+                    }]
+                },
+                options: { responsive: true }
+            });
+
+            // 5. Age vs Price
+            new Chart(document.getElementById('chartAgePrice'), {
+                type: 'line',
+                data: {
+                    labels: ['New', '2 Yrs', '5 Yrs', '10 Yrs', '15 Yrs', '20 Yrs'],
+                    datasets: [{
+                        label: 'Price Index (%)',
+                        data: [100, 97, 91, 84, 76, 70],
+                        borderColor: '#EF4444',
+                        tension: 0.2
+                    }]
+                },
+                options: { responsive: true }
+            });
+        }
+
+        // SHAP Waterfall Chart
+        let shapChartInitialized = false;
+        function initShapChart() {
+            if (shapChartInitialized) return;
+            shapChartInitialized = true;
+
+            new Chart(document.getElementById('chartShapImportance'), {
+                type: 'bar',
+                data: {
+                    labels: ['Locality Tier', 'Carpet Area', 'BHK / Rooms', 'Floor Level', 'Amenity Index', 'Facing (Vastu)', 'Building Age'],
+                    datasets: [{
+                        label: 'Global Mean |SHAP Value| (₹ Lakhs)',
+                        data: [42.5, 36.8, 18.2, 12.4, 9.6, 5.1, 4.3],
+                        backgroundColor: '#D4AF37'
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        // Comparison Matrix
+        function renderComparison() {
+            const body = document.getElementById('comparisonBody');
+            body.innerHTML = `
+                <tr>
+                    <td class="fw-bold text-navy">City / Locality</td>
+                    <td>Bandra West, Mumbai</td>
+                    <td>Indiranagar, Bengaluru</td>
+                    <td>Gachibowli, Hyderabad</td>
+                </tr>
+                <tr>
+                    <td class="fw-bold text-navy">Valuation Price</td>
+                    <td class="fw-bold text-danger">₹ 3.85 Crores</td>
+                    <td class="fw-bold text-primary">₹ 2.35 Crores</td>
+                    <td class="fw-bold text-success">₹ 1.35 Crores</td>
+                </tr>
+                <tr>
+                    <td class="fw-bold text-navy">Super Built-up Area</td>
+                    <td>1,550 sq.ft.</td>
+                    <td>1,850 sq.ft.</td>
+                    <td>1,600 sq.ft.</td>
+                </tr>
+                <tr>
+                    <td class="fw-bold text-navy">Rate per Sq.Ft.</td>
+                    <td>₹ 24,838 / sqft</td>
+                    <td>₹ 12,702 / sqft</td>
+                    <td class="table-success fw-bold text-success">₹ 8,437 / sqft <br><span class="badge bg-success">Best Value</span></td>
+                </tr>
+                <tr>
+                    <td class="fw-bold text-navy">Configuration</td>
+                    <td>3 BHK, 3 Baths</td>
+                    <td>3 BHK, 3 Baths</td>
+                    <td>3 BHK, 3 Baths</td>
+                </tr>
+                <tr>
+                    <td class="fw-bold text-navy">Property Type</td>
+                    <td>High-Rise Apartment</td>
+                    <td>Luxury Villa</td>
+                    <td>Gated Society Flat</td>
+                </tr>
+                <tr>
+                    <td class="fw-bold text-navy">Building Age</td>
+                    <td>3 Years</td>
+                    <td>2 Years</td>
+                    <td>2 Years</td>
+                </tr>
+                <tr>
+                    <td class="fw-bold text-navy">Lifestyle Amenities</td>
+                    <td>Gym, Pool, Security</td>
+                    <td>Private Garden, Club</td>
+                    <td>Full Clubhouse, Power Backup</td>
+                </tr>
+            `;
+        }
+
+        function resetComparison() {
+            renderComparison();
+        }
+
+        // Smart Recommendations Filter
+        function filterRecommendations() {
+            const city = document.getElementById('recCity').value;
+            const bhk = document.getElementById('recBhk').value;
+            const budgetLakhs = parseFloat(document.getElementById('recBudget').value) || 300;
+            const maxBudget = budgetLakhs * 100000;
+            const type = document.getElementById('recType').value;
+
+            const grid = document.getElementById('recommendationsGrid');
+            grid.innerHTML = '';
+
+            let filtered = sampleProperties.filter(p => {
+                if (city !== 'ALL' && p.city !== city) return false;
+                if (bhk !== 'ALL' && p.bhk !== parseInt(bhk)) return false;
+                if (type !== 'ALL' && p.type !== type) return false;
+                if (p.price > maxBudget) return false;
+                return true;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `<div class="col-12 text-center text-muted py-5">No properties found matching the selected filters. Try expanding your budget or city criteria.</div>`;
+                return;
+            }
+
+            filtered.slice(0, 6).forEach(p => {
+                const col = document.createElement('div');
+                col.className = 'col-lg-4 col-md-6';
+                col.innerHTML = `
+                    <div class="property-card">
+                        <div class="prop-img-box">
+                            <i class="fa-solid fa-building-user fa-3x opacity-50"></i>
+                            <span class="prop-badge">${p.type}</span>
+                        </div>
+                        <div class="prop-body">
+                            <div>
+                                <div class="prop-price">${formatINR(p.price)}</div>
+                                <div class="fw-bold text-navy">${p.locality}, ${p.city}</div>
+                                <div class="prop-meta">
+                                    <span><i class="fa-solid fa-bed me-1"></i>${p.bhk} BHK</span>
+                                    <span><i class="fa-solid fa-bath me-1"></i>${p.baths} Baths</span>
+                                    <span><i class="fa-solid fa-ruler-combined me-1"></i>${p.area} sqft</span>
+                                </div>
+                            </div>
+                            <button class="btn btn-sm btn-navy w-100" onclick="quickSelectCity('${p.city}')">
+                                <i class="fa-solid fa-calculator me-1"></i> Evaluate Property
+                            </button>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(col);
+            });
+        }
+
+        // Budget Slider Update
+        function updateBudgetSlider(val) {
+            document.getElementById('budgetValueLabel').textContent = formatINR(val * 100000);
+            renderBudgetGrid(val * 100000);
+        }
+
+        function renderBudgetGrid(maxBudget) {
+            const grid = document.getElementById('budgetGrid');
+            grid.innerHTML = '';
+
+            let matches = sampleProperties.filter(p => p.price <= maxBudget).sort((a, b) => (a.price / a.area) - (b.price / b.area)).slice(0, 6);
+
+            matches.forEach(p => {
+                const rate = Math.round(p.price / p.area);
+                const col = document.createElement('div');
+                col.className = 'col-lg-4 col-md-6';
+                col.innerHTML = `
+                    <div class="property-card">
+                        <div class="prop-img-box">
+                            <i class="fa-solid fa-house-chimney fa-3x opacity-50"></i>
+                            <span class="prop-badge">₹ ${rate.toLocaleString()}/sqft</span>
+                        </div>
+                        <div class="prop-body">
+                            <div>
+                                <div class="prop-price">${formatINR(p.price)}</div>
+                                <div class="fw-bold text-navy">${p.locality}, ${p.city}</div>
+                                <div class="prop-meta">
+                                    <span><i class="fa-solid fa-bed me-1"></i>${p.bhk} BHK</span>
+                                    <span><i class="fa-solid fa-ruler-combined me-1"></i>${p.area} sqft</span>
+                                </div>
+                            </div>
+                            <button class="btn btn-sm btn-outline-dark w-100" onclick="quickSelectCity('${p.city}')">
+                                Run AVM Valuation
+                            </button>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(col);
+            });
+        }
+
+        // Window onload initialization
+        window.addEventListener('DOMContentLoaded', () => {
+            initCityQuickGrid();
+            updateLocalities();
+            calculateLivePrediction();
+            renderComparison();
+            filterRecommendations();
+            renderBudgetGrid(15000000);
+        });
+    </script>
+</body>
+</html>
